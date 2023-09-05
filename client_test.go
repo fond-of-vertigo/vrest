@@ -14,7 +14,7 @@ type testError struct {
 	Message2 string
 }
 
-func (e *testError) Error() string {
+func (e testError) Error() string {
 	return fmt.Sprintf("%s: %s", e.Message1, e.Message2)
 }
 
@@ -40,6 +40,7 @@ func TestClient_Do(t *testing.T) {
 	defer testServer.Close()
 
 	client := NewWithClient(testServer.Client()).
+		SetTraceMaker(&NopTraceMaker{}).
 		SetBaseURL(testServer.URL).
 		SetTimeout(1 * time.Minute).
 		SetErrorBodyType(testError{})
@@ -48,12 +49,13 @@ func TestClient_Do(t *testing.T) {
 	//client.Overridable.Do = MockDoer(nil, &testError{Message1: "xyz", Message2: "abc"})
 
 	//client.Overridable.DoHTTPRequest = MockHTTPDoer(MockHTTPParams{}, "X-API-Key", "")
-	client.Overridable.DoHTTPRequest = MockHTTPDoer(MockJSONResponse(200, `{"text": "test", "number": 123}`))
+	//client.Overridable.DoHTTPRequest = MockHTTPDoer(MockJSONResponse(200, `{"text": "test", "number": 123}`))
+	client.Overridable.DoHTTPRequest = MockHTTPDoer(MockJSONResponse(400, `{"message1": "test", "message2": "m2"}`))
 
 	respBody := testBody{}
 	err := client.NewRequest().
 		SetResponseBody(&respBody).
-		Get("/")
+		Get("/test")
 
 	if err != nil {
 		var e2 *testError

@@ -9,6 +9,7 @@ import (
 
 type Response struct {
 	Raw       *http.Response
+	Error     error
 	Body      interface{}
 	ErrorBody interface{}
 	ForceJSON bool

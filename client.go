@@ -23,6 +23,7 @@ type Client struct {
 	Overridable Overridables
 
 	httpClient *http.Client
+	traceMaker TraceMaker
 }
 
 type Overridables struct {
@@ -67,7 +68,12 @@ func (c *Client) SetTimeout(timeout time.Duration) *Client {
 	return c
 }
 
-func (c *Client) SetErrorBodyType(value interface{}) *Client {
+func (c *Client) SetTraceMaker(traceMaker TraceMaker) *Client {
+	c.traceMaker = traceMaker
+	return c
+}
+
+func (c *Client) SetErrorBodyType(value error) *Client {
 	c.ErrorType = typeOf(value)
 	return c
 }
@@ -101,11 +107,15 @@ func Do(req *Request) error {
 		return err
 	}
 
+	trace := req.Client.traceMaker.New(req)
+	defer trace.Close()
+
 	rawResp, err := req.Overridable.DoHTTPRequest(req)
 	defer req.Client.closeRawResponse(rawResp)
 
-	err = req.processHTTPResponse(rawResp, err)
-	return err
+	req.Response.Error = req.processHTTPResponse(rawResp, err)
+	trace.OnAfterRequest(req)
+	return req.Response.Error
 }
 
 func DoHTTPRequest(req *Request) (*http.Response, error) {
