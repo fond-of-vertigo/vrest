@@ -12,14 +12,16 @@ type Trace interface {
 }
 
 type NopTraceMaker struct{}
-type NopTrace struct{}
 
 func (*NopTraceMaker) New(req *Request) Trace {
 	return &NopTrace{}
 }
 
+type NopTrace struct{}
+
 func (*NopTrace) Close() error {
 	return nil
 }
+
 func (*NopTrace) OnAfterRequest(req *Request) {
 }

@@ -10,8 +10,7 @@ import (
 
 func MockDoer(responseValue interface{}, err error) Doer {
 	return func(req *Request) error {
-		mockSetResponseValue(req, responseValue)
-		return err
+		return mockSetResponseValue(req, responseValue)
 	}
 }
 

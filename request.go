@@ -3,6 +3,7 @@ package vrest
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
@@ -41,12 +42,6 @@ func (c *Client) NewRequest() *Request {
 	}
 
 	return req
-}
-
-func (req *Request) Get(path string) error {
-	req.Method = http.MethodGet
-	req.Path = path
-	return req.Client.Overridable.Do(req)
 }
 
 func (req *Request) makeHTTPRequest() error {
@@ -121,6 +116,18 @@ func (req *Request) makeRequestURL(baseURL, requestURL string) string {
 	return requestURL
 }
 
+func (req *Request) SetQueryParamIf(condition bool, key string, values ...string) *Request {
+	if condition {
+		return req.SetQueryParam(key, values...)
+	}
+	return req
+}
+
+func (req *Request) SetQueryParam(key string, values ...string) *Request {
+	req.Query[key] = values
+	return req
+}
+
 func (req *Request) ContentType() string {
 	return req.Header.Get("Content-Type")
 }
@@ -151,8 +158,9 @@ func (req *Request) SetResponseErrorBody(value interface{}) *Request {
 }
 
 func (req *Request) SetBasicAuth(username, password string) *Request {
-	req.Raw.SetBasicAuth(username, password)
-	return req
+	auth := username + ":" + password
+	auth = base64.StdEncoding.EncodeToString([]byte(auth))
+	return req.SetAuthorization(auth)
 }
 
 func (req *Request) SetBearerAuth(token string) *Request {
@@ -173,6 +181,13 @@ func (req *Request) SetContentType(contentType string) *Request {
 
 func (req *Request) SetAuthorization(authValue string) *Request {
 	return req.SetHeader("Authorization", authValue)
+}
+
+func (req *Request) SetHeaderIf(condition bool, key string, value string) *Request {
+	if condition {
+		return req.SetHeader(key, value)
+	}
+	return req
 }
 
 func (req *Request) SetHeader(key string, value string) *Request {

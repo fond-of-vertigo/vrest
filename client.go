@@ -3,6 +3,7 @@ package vrest
 import (
 	"encoding/json"
 	"encoding/xml"
+	"log/slog"
 	"net/http"
 	"reflect"
 	"time"
@@ -24,6 +25,7 @@ type Client struct {
 
 	httpClient *http.Client
 	traceMaker TraceMaker
+	logger     *slog.Logger
 }
 
 type Overridables struct {
@@ -42,14 +44,20 @@ type Overridables struct {
 	XMLUnmarshal func(req *Request, data []byte, v interface{}) error
 }
 
-// New creates a new client with http.DefaultClient
 func New() *Client {
-	return NewWithClient(http.DefaultClient)
+	return NewWithTimeout(0)
+}
+
+func NewWithTimeout(timeout time.Duration) *Client {
+	return NewWithClient(&http.Client{
+		Timeout: timeout,
+	})
 }
 
 func NewWithClient(httpClient *http.Client) *Client {
 	return &Client{
 		httpClient: httpClient,
+		logger:     slog.Default(),
 
 		Overridable: Overridables{
 			Do:            Do,
@@ -63,8 +71,8 @@ func NewWithClient(httpClient *http.Client) *Client {
 	}
 }
 
-func (c *Client) SetTimeout(timeout time.Duration) *Client {
-	c.httpClient.Timeout = timeout
+func (c *Client) SetLogger(logger *slog.Logger) *Client {
+	c.logger = logger
 	return c
 }
 
@@ -99,27 +107,6 @@ func (c *Client) SetContentType(contentType string) *Client {
 func (c *Client) SetResponseBodyLimit(limit int64) *Client {
 	c.ResponseBodyLimit = limit
 	return c
-}
-
-func Do(req *Request) error {
-	err := req.makeHTTPRequest()
-	if err != nil {
-		return err
-	}
-
-	trace := req.Client.traceMaker.New(req)
-	defer trace.Close()
-
-	rawResp, err := req.Overridable.DoHTTPRequest(req)
-	defer req.Client.closeRawResponse(rawResp)
-
-	req.Response.Error = req.processHTTPResponse(rawResp, err)
-	trace.OnAfterRequest(req)
-	return req.Response.Error
-}
-
-func DoHTTPRequest(req *Request) (*http.Response, error) {
-	return req.Client.httpClient.Do(req.Raw)
 }
 
 func JSONMarshal(req *Request, v interface{}) ([]byte, error) {

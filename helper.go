@@ -1,7 +1,7 @@
 package vrest
 
 import (
-	"net/http"
+	"log/slog"
 	"reflect"
 	"strings"
 )
@@ -19,11 +19,12 @@ func IsSuccess(req *Request) bool {
 	return statusCode >= 200 && statusCode < 300
 }
 
-func (c *Client) closeRawResponse(resp *http.Response) {
+func (c *Client) closeRawResponse(req *Request) {
+	resp := req.Response.Raw
 	if resp != nil && resp.Body != nil {
 		err := resp.Body.Close()
 		if err != nil {
-			// TODO: Log here
+			c.logger.LogAttrs(req.Raw.Context(), slog.LevelError, "error when closing response body", slog.String("error", err.Error()))
 		}
 	}
 }

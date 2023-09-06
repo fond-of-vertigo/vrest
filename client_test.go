@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 )
 
 type testError struct {
@@ -42,7 +41,6 @@ func TestClient_Do(t *testing.T) {
 	client := NewWithClient(testServer.Client()).
 		SetTraceMaker(&NopTraceMaker{}).
 		SetBaseURL(testServer.URL).
-		SetTimeout(1 * time.Minute).
 		SetErrorBodyType(testError{})
 
 	//client.Overridable.Do = MockDoer(testBody{Text: "text", Number: 456}, nil)
@@ -55,12 +53,12 @@ func TestClient_Do(t *testing.T) {
 	respBody := testBody{}
 	err := client.NewRequest().
 		SetResponseBody(&respBody).
-		Get("/test")
+		DoGet("/test")
 
 	if err != nil {
 		var e2 *testError
 		if errors.As(err, &e2) {
-			fmt.Sprintf("%v", e2)
+			_ = fmt.Sprintf("%v", e2)
 		}
 
 		t.Fatal(err)
