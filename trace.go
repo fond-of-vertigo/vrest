@@ -1,7 +1,7 @@
 package vrest
 
 type TraceMaker interface {
-	New(req *Request) Trace
+	NewTrace(req *Request) Trace
 }
 
 type Trace interface {
@@ -14,7 +14,7 @@ type NopTrace struct{}
 
 var nopTrace *NopTrace = &NopTrace{}
 
-func (*NopTraceMaker) New(req *Request) Trace {
+func (*NopTraceMaker) NewTrace(req *Request) Trace {
 	return nopTrace
 }
 

@@ -10,7 +10,7 @@ func Do(req *Request) error {
 		return err
 	}
 
-	trace := req.Client.traceMaker.New(req)
+	trace := req.Client.traceMaker.NewTrace(req)
 	defer trace.End()
 
 	req.Response.Raw, err = req.Overridable.DoHTTPRequest(req)

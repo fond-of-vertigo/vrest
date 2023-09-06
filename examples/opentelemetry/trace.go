@@ -16,7 +16,7 @@ type Tracer struct {
 	Tracer trace.Tracer
 }
 
-func (o *Tracer) New(req *vrest.Request) vrest.Trace {
+func (o *Tracer) NewTrace(req *vrest.Request) vrest.Trace {
 	httpReq := req.Raw
 	spanName := fmt.Sprintf("http.request %s %s", req.Method, req.Raw.URL.String())
 	ctx, span := o.Tracer.Start(
@@ -38,9 +38,8 @@ type Trace struct {
 	span trace.Span
 }
 
-func (o *Trace) Close() error {
+func (o *Trace) End() {
 	o.span.End()
-	return nil
 }
 
 func (o *Trace) OnAfterRequest(req *vrest.Request) {
