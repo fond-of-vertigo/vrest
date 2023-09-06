@@ -123,6 +123,11 @@ func (req *Request) SetContext(ctx context.Context) *Request {
 	return req
 }
 
+func (req *Request) SetBody(body interface{}) *Request {
+	req.Body = body
+	return req
+}
+
 func (req *Request) SetQueryParamIf(condition bool, key string, values ...string) *Request {
 	if condition {
 		return req.SetQueryParam(key, values...)

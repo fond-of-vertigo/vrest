@@ -1,6 +1,7 @@
 package vrest
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -21,45 +22,45 @@ func Do(req *Request) error {
 	return req.Response.Error
 }
 
-func (req *Request) DoGet(path string, pathParams ...string) error {
-	return req.Do(http.MethodGet, path, pathParams...)
+func (req *Request) DoGet(pathFormat string, values ...any) error {
+	return req.Do(http.MethodGet, pathFormat, values...)
 }
 
-func (req *Request) DoHead(path string, pathParams ...string) error {
-	return req.Do(http.MethodHead, path, pathParams...)
+func (req *Request) DoHead(pathFormat string, values ...any) error {
+	return req.Do(http.MethodHead, pathFormat, values...)
 }
 
-func (req *Request) DoPost(path string, pathParams ...string) error {
-	return req.Do(http.MethodPost, path, pathParams...)
+func (req *Request) DoPost(pathFormat string, values ...any) error {
+	return req.Do(http.MethodPost, pathFormat, values...)
 }
 
-func (req *Request) DoPut(path string, pathParams ...string) error {
-	return req.Do(http.MethodPut, path, pathParams...)
+func (req *Request) DoPut(pathFormat string, values ...any) error {
+	return req.Do(http.MethodPut, pathFormat, values...)
 }
 
-func (req *Request) DoPatch(path string, pathParams ...string) error {
-	return req.Do(http.MethodPatch, path, pathParams...)
+func (req *Request) DoPatch(pathFormat string, values ...any) error {
+	return req.Do(http.MethodPatch, pathFormat, values...)
 }
 
-func (req *Request) DoDelete(path string, pathParams ...string) error {
-	return req.Do(http.MethodDelete, path, pathParams...)
+func (req *Request) DoDelete(pathFormat string, values ...any) error {
+	return req.Do(http.MethodDelete, pathFormat, values...)
 }
 
-func (req *Request) DoConnect(path string, pathParams ...string) error {
-	return req.Do(http.MethodConnect, path, pathParams...)
+func (req *Request) DoConnect(pathFormat string, values ...any) error {
+	return req.Do(http.MethodConnect, pathFormat, values...)
 }
 
-func (req *Request) DoOptions(path string, pathParams ...string) error {
-	return req.Do(http.MethodOptions, path, pathParams...)
+func (req *Request) DoOptions(pathFormat string, values ...any) error {
+	return req.Do(http.MethodOptions, pathFormat, values...)
 }
 
-func (req *Request) DoTrace(path string, pathParams ...string) error {
-	return req.Do(http.MethodTrace, path, pathParams...)
+func (req *Request) DoTrace(pathFormat string, values ...any) error {
+	return req.Do(http.MethodTrace, pathFormat, values...)
 }
 
-func (req *Request) Do(method, path string, pathParams ...string) error {
+func (req *Request) Do(method, pathFormat string, values ...any) error {
 	req.Method = method
-	req.Path = makePath(path, pathParams...)
+	req.Path = fmt.Sprintf(pathFormat, values...)
 	return req.Client.Overridable.Do(req)
 }
 
