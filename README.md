@@ -24,3 +24,4 @@ Simple REST Client
         * No support planned for non-rest features like Forms or Multipart
         * No redirect handling
         * No retry handling, yet
+        
