@@ -11,7 +11,7 @@ func Do(req *Request) error {
 	}
 
 	trace := req.Client.traceMaker.New(req)
-	defer trace.Close()
+	defer trace.End()
 
 	req.Response.Raw, err = req.Overridable.DoHTTPRequest(req)
 	defer req.Client.closeRawResponse(req)

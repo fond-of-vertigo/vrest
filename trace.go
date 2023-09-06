@@ -1,27 +1,25 @@
 package vrest
 
-import "io"
-
 type TraceMaker interface {
 	New(req *Request) Trace
 }
 
 type Trace interface {
-	io.Closer
 	OnAfterRequest(req *Request)
+	End()
 }
 
 type NopTraceMaker struct{}
-
-func (*NopTraceMaker) New(req *Request) Trace {
-	return &NopTrace{}
-}
-
 type NopTrace struct{}
 
-func (*NopTrace) Close() error {
-	return nil
+var nopTrace *NopTrace = &NopTrace{}
+
+func (*NopTraceMaker) New(req *Request) Trace {
+	return nopTrace
 }
 
 func (*NopTrace) OnAfterRequest(req *Request) {
+}
+
+func (*NopTrace) End() {
 }
