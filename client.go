@@ -17,7 +17,8 @@ type Client struct {
 
 	ResponseBodyLimit int64
 
-	ContentType string
+	ContentType   string
+	Authorization string
 
 	ErrorType reflect.Type
 
@@ -101,6 +102,19 @@ func (c *Client) SetContentTypeXML() *Client {
 
 func (c *Client) SetContentType(contentType string) *Client {
 	c.ContentType = contentType
+	return c
+}
+
+func (c *Client) SetBasicAuth(username, password string) *Client {
+	return c.SetAuthorization("Basic " + encodeBasicAuth(username, password))
+}
+
+func (c *Client) SetBearerAuth(token string) *Client {
+	return c.SetAuthorization("Bearer " + token)
+}
+
+func (c *Client) SetAuthorization(auth string) *Client {
+	c.Authorization = auth
 	return c
 }
 

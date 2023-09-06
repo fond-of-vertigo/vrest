@@ -1,6 +1,7 @@
 package vrest
 
 import (
+	"encoding/base64"
 	"log/slog"
 	"reflect"
 	"strings"
@@ -31,4 +32,9 @@ func (c *Client) closeRawResponse(req *Request) {
 
 func typeOf(i interface{}) reflect.Type {
 	return reflect.Indirect(reflect.ValueOf(i)).Type()
+}
+
+func encodeBasicAuth(username, password string) string {
+	auth := username + ":" + password
+	return base64.StdEncoding.EncodeToString([]byte(auth))
 }

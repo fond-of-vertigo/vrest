@@ -3,7 +3,6 @@ package vrest
 import (
 	"bytes"
 	"context"
-	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
@@ -39,6 +38,9 @@ func (c *Client) NewRequest() *Request {
 
 	if c.ContentType != "" {
 		req.SetContentType(c.ContentType)
+	}
+	if c.Authorization != "" {
+		req.SetAuthorization(c.Authorization)
 	}
 
 	return req
@@ -158,9 +160,7 @@ func (req *Request) SetResponseErrorBody(value interface{}) *Request {
 }
 
 func (req *Request) SetBasicAuth(username, password string) *Request {
-	auth := username + ":" + password
-	auth = base64.StdEncoding.EncodeToString([]byte(auth))
-	return req.SetAuthorization(auth)
+	return req.SetAuthorization("Basic " + encodeBasicAuth(username, password))
 }
 
 func (req *Request) SetBearerAuth(token string) *Request {
