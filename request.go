@@ -118,6 +118,11 @@ func (req *Request) makeRequestURL(baseURL, requestURL string) string {
 	return requestURL
 }
 
+func (req *Request) SetContext(ctx context.Context) *Request {
+	req.Context = ctx
+	return req
+}
+
 func (req *Request) SetQueryParamIf(condition bool, key string, values ...string) *Request {
 	if condition {
 		return req.SetQueryParam(key, values...)
