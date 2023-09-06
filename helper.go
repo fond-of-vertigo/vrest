@@ -38,3 +38,10 @@ func encodeBasicAuth(username, password string) string {
 	auth := username + ":" + password
 	return base64.StdEncoding.EncodeToString([]byte(auth))
 }
+
+func errorToString(err error) string {
+	if err == nil {
+		return ""
+	}
+	return err.Error()
+}

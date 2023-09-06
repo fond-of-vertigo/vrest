@@ -1,7 +1,11 @@
 package vrest
 
 import (
+	"context"
+	"fmt"
+	"log/slog"
 	"net/http"
+	"strconv"
 )
 
 func Do(req *Request) error {
@@ -10,14 +14,33 @@ func Do(req *Request) error {
 		return err
 	}
 
-	trace := req.Client.traceMaker.New(req)
-	defer trace.Close()
+	req.Context = context.WithValue(req.Context, "otel.context.ptr", &req.Context)
+	req.Client.logger.LogAttrs(req.Context, slog.LevelDebug, "executing http request",
+		slog.String("otel.action", "trace.start"),
+		slog.String("http.method", req.Raw.Method),
+		slog.String("http.url", req.Raw.URL.String()),
+		slog.String("http.header", fmt.Sprintf("%v", req.Raw.Header)),
+		slog.String("http.body", string(req.BodyBytes)),
+	)
+	defer req.Client.logger.LogAttrs(req.Context, slog.LevelDebug, "", slog.String("otel.action", "span.end"))
+
+	//trace := req.Client.traceMaker.New(req)
+	//defer trace.Close()
 
 	req.Response.Raw, err = req.Overridable.DoHTTPRequest(req)
 	defer req.Client.closeRawResponse(req)
 
 	req.Response.Error = req.processHTTPResponse(req.Response.Raw, err)
-	trace.OnAfterRequest(req)
+
+	//trace.OnAfterRequest(req)
+	req.Client.logger.LogAttrs(req.Context, slog.LevelDebug, "executed http request",
+		slog.String("otel.action", "span.set_attributes"),
+		slog.String("request.error", errorToString(req.Response.Error)),
+		slog.String("http.status_code", strconv.Itoa(req.Response.StatusCode())),
+		slog.String("http.response_header", fmt.Sprintf("%v", req.Raw.Header)),
+		slog.String("http.response_body", string(req.Response.BodyBytes)),
+	)
+
 	return req.Response.Error
 }
 

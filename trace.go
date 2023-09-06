@@ -2,6 +2,10 @@ package vrest
 
 import "io"
 
+type Ender interface {
+	End()
+}
+
 type TraceMaker interface {
 	New(req *Request) Trace
 }
