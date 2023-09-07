@@ -18,20 +18,18 @@ func MockDoer(responseValue interface{}, err error) Doer {
 }
 
 type MockHTTPResponse struct {
-	WantMethod string
-	WantURL    string
-
-	RequestBody []byte
-
 	StatusCode  int
 	Body        []byte
 	BodyString  string
 	BodyReader  io.Reader
 	ContentType string
 	Error       error
+
+	CapturedRequest     *Request
+	CapturedRequestBody []byte
 }
 
-func MockHTTPDoer(t *testing.T, p MockHTTPResponse, additionalHeaders ...string) HTTPDoer {
+func MockHTTPDoer(p MockHTTPResponse, additionalHeaders ...string) HTTPDoer {
 	if len(additionalHeaders)%2 != 0 {
 		panic("len(additionalHeaders) is not even!")
 	}
@@ -62,20 +60,14 @@ func MockHTTPDoer(t *testing.T, p MockHTTPResponse, additionalHeaders ...string)
 	}
 
 	return func(req *Request) (*http.Response, error) {
-		if p.WantMethod != "" && p.WantMethod != req.Raw.Method {
-			t.Errorf("required method does not match: want=%s got=%s", p.WantMethod, req.Raw.Method)
-		}
-
-		if p.WantURL != "" && p.WantURL != req.Raw.URL.String() {
-			t.Errorf("required URL does not match:\nwant: %s\ngot : %s", p.WantURL, req.Raw.URL.String())
-		}
+		p.CapturedRequest = req
 
 		if req.Raw.Body != nil {
 			defer req.Raw.Body.Close()
 			var err error
-			p.RequestBody, err = io.ReadAll(req.Raw.Body)
+			p.CapturedRequestBody, err = io.ReadAll(req.Raw.Body)
 			if err != nil {
-				t.Fatalf("failed to read request body: %s", err)
+				panic(err)
 			}
 		}
 
