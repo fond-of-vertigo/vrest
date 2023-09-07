@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"reflect"
+	"testing"
 )
 
 func MockDoer(responseValue interface{}, err error) Doer {
@@ -58,11 +61,27 @@ func MockHTTPDoer(p MockHTTPParams, additionalHeaders ...string) HTTPDoer {
 	}
 }
 
+func MockJSONResponseFromFile(t *testing.T, statusCode int, filePath string) MockHTTPParams {
+	return MockHTTPParams{
+		StatusCode:  statusCode,
+		Body:        MustReadFile(t, filePath),
+		ContentType: "application/json",
+	}
+}
+
 func MockJSONResponse(statusCode int, body string) MockHTTPParams {
 	return MockHTTPParams{
 		StatusCode:  statusCode,
 		BodyString:  body,
 		ContentType: "application/json",
+	}
+}
+
+func MockXMLResponseFromFile(t *testing.T, statusCode int, filePath string) MockHTTPParams {
+	return MockHTTPParams{
+		StatusCode:  statusCode,
+		Body:        MustReadFile(t, filePath),
+		ContentType: "text/xml",
 	}
 }
 
@@ -72,6 +91,15 @@ func MockXMLResponse(statusCode int, body string) MockHTTPParams {
 		BodyString:  body,
 		ContentType: "text/xml",
 	}
+}
+
+func MustReadFile(t *testing.T, path string) []byte {
+	t.Helper()
+	bytes, err := os.ReadFile(filepath.Clean(path))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return bytes
 }
 
 func mockSetResponseValue(req *Request, value interface{}) error {
