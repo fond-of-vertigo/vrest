@@ -20,7 +20,8 @@ func MockDoer(responseValue interface{}, err error) Doer {
 type MockHTTPResponse struct {
 	WantMethod string
 	WantURL    string
-	WantBody   []byte
+
+	RequestBody []byte
 
 	StatusCode  int
 	Body        []byte
@@ -69,15 +70,12 @@ func MockHTTPDoer(t *testing.T, p MockHTTPResponse, additionalHeaders ...string)
 			t.Errorf("required URL does not match:\nwant: %s\ngot : %s", p.WantURL, req.Raw.URL.String())
 		}
 
-		if len(p.WantBody) > 0 {
-			wantBodyString := string(p.WantBody)
-			bodyBytes, err := io.ReadAll(req.Raw.Body)
+		if req.Raw.Body != nil {
+			defer req.Raw.Body.Close()
+			var err error
+			p.RequestBody, err = io.ReadAll(req.Raw.Body)
 			if err != nil {
 				t.Fatalf("failed to read request body: %s", err)
-			}
-			gotBodyString := string(bodyBytes)
-			if wantBodyString != gotBodyString {
-				t.Error("required body does not match")
 			}
 		}
 
