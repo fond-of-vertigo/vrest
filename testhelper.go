@@ -25,10 +25,10 @@ type MockHTTPResponse struct {
 	ContentType string
 	Error       error
 
-	CapturedRequest **Request
+	CapturedRequest *Request
 }
 
-func MockHTTPDoer(p MockHTTPResponse, additionalHeaders ...string) HTTPDoer {
+func MockHTTPDoer(p *MockHTTPResponse, additionalHeaders ...string) HTTPDoer {
 	if len(additionalHeaders)%2 != 0 {
 		panic("len(additionalHeaders) is not even!")
 	}
@@ -59,39 +59,37 @@ func MockHTTPDoer(p MockHTTPResponse, additionalHeaders ...string) HTTPDoer {
 	}
 
 	return func(req *Request) (*http.Response, error) {
-		if p.CapturedRequest != nil {
-			*p.CapturedRequest = req
-		}
+		p.CapturedRequest = req
 		return &resp, p.Error
 	}
 }
 
-func MockJSONResponseFromFile(t *testing.T, statusCode int, filePath string) MockHTTPResponse {
-	return MockHTTPResponse{
+func MockJSONResponseFromFile(t *testing.T, statusCode int, filePath string) *MockHTTPResponse {
+	return &MockHTTPResponse{
 		StatusCode:  statusCode,
 		Body:        MustReadFile(t, filePath),
 		ContentType: "application/json",
 	}
 }
 
-func MockJSONResponse(statusCode int, body string) MockHTTPResponse {
-	return MockHTTPResponse{
+func MockJSONResponse(statusCode int, body string) *MockHTTPResponse {
+	return &MockHTTPResponse{
 		StatusCode:  statusCode,
 		BodyString:  body,
 		ContentType: "application/json",
 	}
 }
 
-func MockXMLResponseFromFile(t *testing.T, statusCode int, filePath string) MockHTTPResponse {
-	return MockHTTPResponse{
+func MockXMLResponseFromFile(t *testing.T, statusCode int, filePath string) *MockHTTPResponse {
+	return &MockHTTPResponse{
 		StatusCode:  statusCode,
 		Body:        MustReadFile(t, filePath),
 		ContentType: "text/xml",
 	}
 }
 
-func MockXMLResponse(statusCode int, body string) MockHTTPResponse {
-	return MockHTTPResponse{
+func MockXMLResponse(statusCode int, body string) *MockHTTPResponse {
+	return &MockHTTPResponse{
 		StatusCode:  statusCode,
 		BodyString:  body,
 		ContentType: "text/xml",
