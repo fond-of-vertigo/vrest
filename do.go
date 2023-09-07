@@ -11,14 +11,21 @@ func Do(req *Request) error {
 		return err
 	}
 
-	trace := req.Client.traceMaker.NewTrace(req)
-	defer trace.End()
+	var trace Trace
+	if req.Client.traceMaker != nil {
+		trace = req.Client.traceMaker.NewTrace(req)
+		defer trace.End()
+	}
 
 	req.Response.Raw, err = req.Overridable.DoHTTPRequest(req)
 	defer req.Client.closeRawResponse(req)
 
 	req.Response.Error = req.processHTTPResponse(req.Response.Raw, err)
-	trace.OnAfterRequest(req)
+
+	if trace != nil {
+		trace.OnAfterRequest(req)
+	}
+
 	return req.Response.Error
 }
 

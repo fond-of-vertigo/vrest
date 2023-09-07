@@ -39,7 +39,6 @@ func TestClient_Do(t *testing.T) {
 	defer testServer.Close()
 
 	client := NewWithClient(testServer.Client()).
-		SetTraceMaker(&NopTraceMaker{}).
 		SetBaseURL(testServer.URL).
 		SetErrorBodyType(testError{})
 
