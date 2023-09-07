@@ -1,6 +1,7 @@
 package vrest
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"log/slog"
@@ -124,7 +125,11 @@ func (c *Client) SetResponseBodyLimit(limit int64) *Client {
 }
 
 func JSONMarshal(req *Request, v interface{}) ([]byte, error) {
-	return json.Marshal(v)
+	buffer := &bytes.Buffer{}
+	encoder := json.NewEncoder(buffer)
+	encoder.SetEscapeHTML(false)
+	err := encoder.Encode(v)
+	return buffer.Bytes(), err
 }
 
 func JSONUnmarshal(req *Request, data []byte, v interface{}) error {
