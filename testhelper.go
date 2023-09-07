@@ -25,8 +25,7 @@ type MockHTTPResponse struct {
 	ContentType string
 	Error       error
 
-	CapturedRequest     *Request
-	CapturedRequestBody []byte
+	CapturedRequest **Request
 }
 
 func MockHTTPDoer(p MockHTTPResponse, additionalHeaders ...string) HTTPDoer {
@@ -60,7 +59,9 @@ func MockHTTPDoer(p MockHTTPResponse, additionalHeaders ...string) HTTPDoer {
 	}
 
 	return func(req *Request) (*http.Response, error) {
-		p.CapturedRequest = req
+		if p.CapturedRequest != nil {
+			*p.CapturedRequest = req
+		}
 		return &resp, p.Error
 	}
 }
