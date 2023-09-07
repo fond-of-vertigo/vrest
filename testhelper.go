@@ -18,15 +18,17 @@ func MockDoer(responseValue interface{}, err error) Doer {
 }
 
 type MockHTTPResponse struct {
-	StatusCode  int
-	Body        []byte
-	BodyString  string
-	BodyReader  io.Reader
-	ContentType string
-	Error       error
+	RequiredMethod string
+	RequiredURL    string
+	StatusCode     int
+	Body           []byte
+	BodyString     string
+	BodyReader     io.Reader
+	ContentType    string
+	Error          error
 }
 
-func MockHTTPDoer(p MockHTTPResponse, additionalHeaders ...string) HTTPDoer {
+func MockHTTPDoer(t *testing.T, p MockHTTPResponse, additionalHeaders ...string) HTTPDoer {
 	if len(additionalHeaders)%2 != 0 {
 		panic("len(additionalHeaders) is not even!")
 	}
@@ -57,6 +59,14 @@ func MockHTTPDoer(p MockHTTPResponse, additionalHeaders ...string) HTTPDoer {
 	}
 
 	return func(req *Request) (*http.Response, error) {
+		if p.RequiredMethod != "" && p.RequiredMethod != req.Raw.Method {
+			t.Errorf("required method does not match: want=%s got=%s", p.RequiredMethod, req.Raw.Method)
+		}
+
+		if p.RequiredURL != "" && p.RequiredURL != req.Raw.URL.String() {
+			t.Errorf("required URL does not match:\nwant: %s\ngot : %s", p.RequiredURL, req.Raw.URL.String())
+		}
+
 		return &resp, p.Error
 	}
 }
