@@ -18,14 +18,16 @@ func MockDoer(responseValue interface{}, err error) Doer {
 }
 
 type MockHTTPResponse struct {
-	RequiredMethod string
-	RequiredURL    string
-	StatusCode     int
-	Body           []byte
-	BodyString     string
-	BodyReader     io.Reader
-	ContentType    string
-	Error          error
+	WantMethod string
+	WantURL    string
+	WantBody   []byte
+
+	StatusCode  int
+	Body        []byte
+	BodyString  string
+	BodyReader  io.Reader
+	ContentType string
+	Error       error
 }
 
 func MockHTTPDoer(t *testing.T, p MockHTTPResponse, additionalHeaders ...string) HTTPDoer {
@@ -59,12 +61,24 @@ func MockHTTPDoer(t *testing.T, p MockHTTPResponse, additionalHeaders ...string)
 	}
 
 	return func(req *Request) (*http.Response, error) {
-		if p.RequiredMethod != "" && p.RequiredMethod != req.Raw.Method {
-			t.Errorf("required method does not match: want=%s got=%s", p.RequiredMethod, req.Raw.Method)
+		if p.WantMethod != "" && p.WantMethod != req.Raw.Method {
+			t.Errorf("required method does not match: want=%s got=%s", p.WantMethod, req.Raw.Method)
 		}
 
-		if p.RequiredURL != "" && p.RequiredURL != req.Raw.URL.String() {
-			t.Errorf("required URL does not match:\nwant: %s\ngot : %s", p.RequiredURL, req.Raw.URL.String())
+		if p.WantURL != "" && p.WantURL != req.Raw.URL.String() {
+			t.Errorf("required URL does not match:\nwant: %s\ngot : %s", p.WantURL, req.Raw.URL.String())
+		}
+
+		if len(p.WantBody) > 0 {
+			wantBodyString := string(p.WantBody)
+			bodyBytes, err := io.ReadAll(req.Raw.Body)
+			if err != nil {
+				t.Fatalf("failed to read request body: %s", err)
+			}
+			gotBodyString := string(bodyBytes)
+			if wantBodyString != gotBodyString {
+				t.Error("required body does not match")
+			}
 		}
 
 		return &resp, p.Error
