@@ -61,16 +61,6 @@ func MockHTTPDoer(p MockHTTPResponse, additionalHeaders ...string) HTTPDoer {
 
 	return func(req *Request) (*http.Response, error) {
 		p.CapturedRequest = req
-
-		if req.Raw.Body != nil {
-			defer req.Raw.Body.Close()
-			var err error
-			p.CapturedRequestBody, err = io.ReadAll(req.Raw.Body)
-			if err != nil {
-				panic(err)
-			}
-		}
-
 		return &resp, p.Error
 	}
 }
