@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -39,14 +40,15 @@ func MockHTTPDoer(p *MockHTTPResponse, additionalHeaders ...string) HTTPDoer {
 	}
 
 	if resp.StatusCode == 0 {
-		resp.StatusCode = 200
+		resp.StatusCode = http.StatusOK
 	}
 
-	if p.BodyReader != nil {
+	switch {
+	case p.BodyReader != nil:
 		resp.Body = io.NopCloser(p.BodyReader)
-	} else if p.BodyString != "" {
-		resp.Body = io.NopCloser(bytes.NewReader([]byte(p.BodyString)))
-	} else {
+	case p.BodyString != "":
+		resp.Body = io.NopCloser(strings.NewReader(p.BodyString))
+	default:
 		resp.Body = io.NopCloser(bytes.NewReader(p.Body))
 	}
 

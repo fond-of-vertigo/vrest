@@ -16,6 +16,8 @@ type Response struct {
 	ForceXML  bool
 	BodyBytes []byte
 	BodyLimit int64
+
+	SuccessStatusCodes []int
 }
 
 func (req *Request) processHTTPResponse(rawResp *http.Response, err error) error {

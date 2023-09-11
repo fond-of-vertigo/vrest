@@ -24,6 +24,8 @@ type Request struct {
 	Overridable Overridables
 }
 
+// NewRequest creates a new Request instance and initializes its fields with default values.
+// It also sets the Content-Type and Authorization headers of the request if they are provided in the Client struct.
 func (c *Client) NewRequest() *Request {
 	req := &Request{
 		Client:      c,
@@ -151,6 +153,11 @@ func (req *Request) SetResponseBody(value interface{}) *Request {
 
 func (req *Request) SetResponseBodyLimit(limit int64) *Request {
 	req.Response.BodyLimit = limit
+	return req
+}
+
+func (req *Request) SetSuccessStatusCode(statusCodes ...int) *Request {
+	req.Response.SuccessStatusCodes = statusCodes
 	return req
 }
 

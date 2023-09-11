@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"log/slog"
 	"reflect"
+	"slices"
 	"strings"
 )
 
@@ -17,6 +18,11 @@ func IsJSONContentType(contentType string) bool {
 
 func IsSuccess(req *Request) bool {
 	statusCode := req.Response.Raw.StatusCode
+
+	if len(req.Response.SuccessStatusCodes) > 0 {
+		return slices.Contains(req.Response.SuccessStatusCodes, statusCode)
+	}
+
 	return statusCode >= 200 && statusCode < 300
 }
 
