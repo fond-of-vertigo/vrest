@@ -10,21 +10,21 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-type RestTraceMaker struct {
+type OTelTraceMaker struct {
 	Tracer trace.Tracer
 }
 
-type RestTrace struct {
+type OTelTrace struct {
 	span trace.Span
 }
 
-func NewTraceMaker(tracer trace.Tracer) *RestTraceMaker {
-	return &RestTraceMaker{
+func NewOTelTraceMaker(tracer trace.Tracer) *OTelTraceMaker {
+	return &OTelTraceMaker{
 		Tracer: tracer,
 	}
 }
 
-func (rtm *RestTraceMaker) NewTrace(req *Request) Trace {
+func (rtm *OTelTraceMaker) NewTrace(req *Request) Trace {
 	httpReq := req.Raw
 	spanName := fmt.Sprintf("http.request %s %s", req.Method, req.Raw.URL.String())
 
@@ -41,10 +41,10 @@ func (rtm *RestTraceMaker) NewTrace(req *Request) Trace {
 	ctx, span := rtm.Tracer.Start(httpReq.Context(), spanName, trace.WithAttributes(attributes...))
 
 	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(httpReq.Header))
-	return &RestTrace{span: span}
+	return &OTelTrace{span: span}
 }
 
-func (rt *RestTrace) OnAfterRequest(req *Request) {
+func (rt *OTelTrace) OnAfterRequest(req *Request) {
 	attributes := make([]attribute.KeyValue, 0, 3)
 	attributes = append(attributes,
 		attribute.Int("http.status_code", req.Response.StatusCode()),
@@ -56,7 +56,7 @@ func (rt *RestTrace) OnAfterRequest(req *Request) {
 	rt.span.SetAttributes(attributes...)
 }
 
-func (rt *RestTrace) End() {
+func (rt *OTelTrace) End() {
 	rt.span.End()
 }
 

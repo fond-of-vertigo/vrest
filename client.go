@@ -88,7 +88,7 @@ func (c *Client) SetTraceMaker(traceMaker TraceMaker) *Client {
 }
 
 func (c *Client) SetOTelTracer(tracer trace.Tracer) *Client {
-	c.traceMaker = NewTraceMaker(tracer)
+	c.traceMaker = NewOTelTraceMaker(tracer)
 	return c
 }
 
