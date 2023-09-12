@@ -47,7 +47,7 @@ func TestClient_Do(t *testing.T) {
 
 	//client.Overridable.DoHTTPRequest = MockHTTPDoer(MockHTTPParams{}, "X-API-Key", "")
 	//client.Overridable.DoHTTPRequest = MockHTTPDoer(MockJSONResponse(200, `{"text": "test", "number": 123}`))
-	client.Overridable.DoHTTPRequest = MockHTTPDoer(MockJSONResponse(400, `{"message1": "test", "message2": "m2"}`))
+	//client.Overridable.DoHTTPRequest = MockHTTPDoer(MockJSONResponse(400, `{"message1": "test", "message2": "m2"}`))
 
 	respBody := testBody{}
 	err := client.NewRequest().

@@ -16,6 +16,7 @@ type Response struct {
 	ForceXML  bool
 	BodyBytes []byte
 	BodyLimit int64
+	TraceBody bool
 
 	SuccessStatusCodes []int
 }

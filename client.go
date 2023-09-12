@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"reflect"
 	"time"
+
+	"go.opentelemetry.io/otel/trace"
 )
 
 type Doer func(req *Request) error
@@ -17,6 +19,7 @@ type Client struct {
 	BaseURL string
 
 	ResponseBodyLimit int64
+	TraceBodies       bool
 
 	ContentType   string
 	Authorization string
@@ -58,8 +61,9 @@ func NewWithTimeout(timeout time.Duration) *Client {
 
 func NewWithClient(httpClient *http.Client) *Client {
 	return &Client{
-		httpClient: httpClient,
-		logger:     slog.Default(),
+		httpClient:  httpClient,
+		logger:      slog.Default(),
+		TraceBodies: true,
 
 		Overridable: Overridables{
 			Do:            Do,
@@ -80,6 +84,16 @@ func (c *Client) SetLogger(logger *slog.Logger) *Client {
 
 func (c *Client) SetTraceMaker(traceMaker TraceMaker) *Client {
 	c.traceMaker = traceMaker
+	return c
+}
+
+func (c *Client) SetOTelTracer(tracer trace.Tracer) *Client {
+	c.traceMaker = NewTraceMaker(tracer)
+	return c
+}
+
+func (c *Client) SetTraceBodies(value bool) *Client {
+	c.TraceBodies = value
 	return c
 }
 

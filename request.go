@@ -22,6 +22,7 @@ type Request struct {
 	BodyBytes   []byte
 	Response    Response
 	Overridable Overridables
+	TraceBody   bool
 }
 
 // NewRequest creates a new Request instance and initializes its fields with default values.
@@ -33,8 +34,10 @@ func (c *Client) NewRequest() *Request {
 		Header:      make(http.Header),
 		Query:       make(url.Values),
 		Overridable: c.Overridable,
+		TraceBody:   c.TraceBodies,
 		Response: Response{
 			BodyLimit: c.ResponseBodyLimit,
+			TraceBody: c.TraceBodies,
 		},
 	}
 
@@ -127,6 +130,16 @@ func (req *Request) SetContext(ctx context.Context) *Request {
 
 func (req *Request) SetBody(body interface{}) *Request {
 	req.Body = body
+	return req
+}
+
+func (req *Request) SetTraceRequestBody(value bool) *Request {
+	req.TraceBody = value
+	return req
+}
+
+func (req *Request) SetTraceResponseBody(value bool) *Request {
+	req.Response.TraceBody = value
 	return req
 }
 
