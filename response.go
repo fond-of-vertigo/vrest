@@ -8,15 +8,16 @@ import (
 )
 
 type Response struct {
-	Raw       *http.Response
-	Error     error
-	Body      interface{}
-	ErrorBody interface{}
-	ForceJSON bool
-	ForceXML  bool
-	BodyBytes []byte
-	BodyLimit int64
-	TraceBody bool
+	Raw         *http.Response
+	Error       error
+	Body        interface{}
+	ErrorBody   interface{}
+	ForceJSON   bool
+	ForceXML    bool
+	BodyBytes   []byte
+	BodyLimit   int64
+	TraceBody   bool
+	DoUnmarshal bool
 
 	SuccessStatusCodes []int
 }
@@ -44,7 +45,7 @@ func (req *Request) processHTTPResponse(rawResp *http.Response, err error) error
 	}
 
 	responseValue := req.Response.Body
-	if !success {
+	if !success && req.Response.DoUnmarshal {
 		if req.Response.ErrorBody == nil && req.Client.ErrorType != nil {
 			req.Response.ErrorBody = reflect.New(req.Client.ErrorType).Interface()
 		}
@@ -85,10 +86,21 @@ func (req *Request) readResponseBody() error {
 
 	var err error
 	req.Response.BodyBytes, err = io.ReadAll(r)
+	if len(req.Response.BodyBytes) > 0 && req.Response.WantsRawByteArray() {
+		if responseBytesPointer, ok := req.Response.Body.(*[]byte); ok && responseBytesPointer != nil {
+			*responseBytesPointer = req.Response.BodyBytes
+			req.Response.DoUnmarshal = false
+		}
+	}
+
 	return err
 }
 
 func (req *Request) unmarshalResponseBody(value interface{}) (bool, error) {
+	if !req.Response.DoUnmarshal {
+		return false, nil
+	}
+
 	var err error
 	if req.Response.ForceJSON || IsJSONContentType(req.Response.ContentType()) {
 		err = req.Overridable.JSONUnmarshal(req, req.Response.BodyBytes, value)
@@ -107,6 +119,16 @@ func (req *Request) unmarshalResponseBody(value interface{}) (bool, error) {
 	}
 
 	return false, nil
+}
+
+func (resp *Response) WantsRawByteArray() bool {
+	if resp.Body == nil {
+		return false
+	}
+	if responseBytesPointer, ok := resp.Body.(*[]byte); ok && responseBytesPointer != nil {
+		return true
+	}
+	return false
 }
 
 func (resp *Response) HasEmptyBody() bool {

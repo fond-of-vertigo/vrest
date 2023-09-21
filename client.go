@@ -8,8 +8,6 @@ import (
 	"net/http"
 	"reflect"
 	"time"
-
-	"go.opentelemetry.io/otel/trace"
 )
 
 type Doer func(req *Request) error
@@ -84,11 +82,6 @@ func (c *Client) SetLogger(logger *slog.Logger) *Client {
 
 func (c *Client) SetTraceMaker(traceMaker TraceMaker) *Client {
 	c.traceMaker = traceMaker
-	return c
-}
-
-func (c *Client) SetOTelTracer(tracer trace.Tracer) *Client {
-	c.traceMaker = NewOTelTraceMaker(tracer)
 	return c
 }
 

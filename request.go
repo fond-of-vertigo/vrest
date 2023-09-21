@@ -36,8 +36,9 @@ func (c *Client) NewRequest() *Request {
 		Overridable: c.Overridable,
 		TraceBody:   c.TraceBodies,
 		Response: Response{
-			BodyLimit: c.ResponseBodyLimit,
-			TraceBody: c.TraceBodies,
+			BodyLimit:   c.ResponseBodyLimit,
+			TraceBody:   c.TraceBodies,
+			DoUnmarshal: true,
 		},
 	}
 
