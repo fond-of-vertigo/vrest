@@ -4,7 +4,7 @@ Simple REST client inspired by the great [resty](https://github.com/go-resty/res
 ## Why another rest lib?
 We really like the API of resty, but there are a few reasons why we created our own lib:
 
- 1. **Minimal dependencies**: vrest has no dependencies besides open telemetry.
+ 1. **No dependencies**: vrest has no dependencies.
 
  1. **Efficient memory usage**: We don't want a rest lib to copy body bytes. The lib user 
     should be in control. vrest gives you access to the body bytes (if available).
