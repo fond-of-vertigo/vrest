@@ -101,6 +101,12 @@ func (req *Request) unmarshalResponseBody(value interface{}) (bool, error) {
 		return false, nil
 	}
 
+	if value == nil {
+		// seems like the caller is not interested in the result value
+		// just exit without error
+		return false, nil
+	}
+
 	var err error
 	if req.Response.ForceJSON || IsJSONContentType(req.Response.ContentType()) {
 		err = req.Overridable.JSONUnmarshal(req, req.Response.BodyBytes, value)
