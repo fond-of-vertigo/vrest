@@ -72,6 +72,9 @@ func (req *Request) makeHTTPRequest() error {
 
 	if len(req.Header) > 0 {
 		req.Raw.Header = req.Header
+		if len(bodyBytes) == 0 {
+			req.Raw.Header.Del("Content-Type")
+		}
 	}
 
 	if len(req.Query) > 0 {
