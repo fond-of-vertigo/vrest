@@ -18,7 +18,9 @@ func Do(req *Request) error {
 	}
 
 	req.Response.Raw, err = req.Overridable.DoHTTPRequest(req)
-	defer req.Client.closeRawResponse(req)
+	if req.Response.CloseBody {
+		defer req.Client.closeRawResponse(req)
+	}
 
 	req.Response.Error = req.processHTTPResponse(req.Response.Raw, err)
 
