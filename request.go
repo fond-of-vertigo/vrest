@@ -135,11 +135,6 @@ func (req *Request) SetContext(ctx context.Context) *Request {
 
 func (req *Request) SetBody(body interface{}) *Request {
 	req.Body = body
-	if req.Response.WantsReadCloser() {
-		req.Response.CloseBody = false
-		req.Response.TraceBody = false
-		req.Response.DoUnmarshal = false
-	}
 	return req
 }
 
@@ -171,6 +166,11 @@ func (req *Request) ContentType() string {
 
 func (req *Request) SetResponseBody(value interface{}) *Request {
 	req.Response.Body = value
+	if req.Response.WantsReadCloser() {
+		req.Response.CloseBody = false
+		req.Response.TraceBody = false
+		req.Response.DoUnmarshal = false
+	}
 	return req
 }
 
