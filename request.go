@@ -38,6 +38,7 @@ func (c *Client) NewRequest() *Request {
 		Response: Response{
 			BodyLimit:   c.ResponseBodyLimit,
 			TraceBody:   c.TraceBodies,
+			CloseBody:   true,
 			DoUnmarshal: true,
 		},
 	}
@@ -134,6 +135,11 @@ func (req *Request) SetContext(ctx context.Context) *Request {
 
 func (req *Request) SetBody(body interface{}) *Request {
 	req.Body = body
+	if req.Response.WantsReadCloser() {
+		req.Response.CloseBody = false
+		req.Response.TraceBody = false
+		req.Response.DoUnmarshal = false
+	}
 	return req
 }
 
