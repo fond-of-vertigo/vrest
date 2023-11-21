@@ -68,6 +68,9 @@ func (req *Request) processHTTPResponse(rawResp *http.Response, err error) error
 			}
 		} else {
 			msg := string(req.Response.BodyBytes)
+			if msg == "" && req.Response.WantsReadCloser() {
+				msg = req.forceReadErrorBodyAsString()
+			}
 			return fmt.Errorf("http request %s %s failed: %s", req.Raw.Method, req.Raw.URL, msg)
 		}
 	}
@@ -102,6 +105,21 @@ func (req *Request) readResponseBody() error {
 	}
 
 	return err
+}
+
+func (req *Request) forceReadErrorBodyAsString() string {
+	// discard ReadCloser on errors
+	if responseReadCloser, ok := req.Response.Body.(*io.ReadCloser); ok && responseReadCloser != nil {
+		*responseReadCloser = nil
+	}
+
+	r := io.LimitReader(req.Response.Raw.Body, 4096)
+	data, err := io.ReadAll(r)
+	req.Client.closeRawResponse(req)
+	if err != nil {
+		return fmt.Sprintf("failed to read response body for %s %s", req.Raw.Method, req.Raw.URL)
+	}
+	return string(data)
 }
 
 func (req *Request) unmarshalResponseBody(value interface{}) (bool, error) {
