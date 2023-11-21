@@ -38,7 +38,6 @@ func (c *Client) NewRequest() *Request {
 		Response: Response{
 			BodyLimit:   c.ResponseBodyLimit,
 			TraceBody:   c.TraceBodies,
-			CloseBody:   true,
 			DoUnmarshal: true,
 		},
 	}
@@ -166,9 +165,6 @@ func (req *Request) ContentType() string {
 
 func (req *Request) SetResponseBody(value interface{}) *Request {
 	req.Response.Body = value
-	if req.Response.WantsReadCloser() {
-		req.Response.CloseBody = false
-	}
 	return req
 }
 

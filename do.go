@@ -18,7 +18,7 @@ func Do(req *Request) error {
 	}
 
 	req.Response.Raw, err = req.Overridable.DoHTTPRequest(req)
-	if req.Response.CloseBody {
+	if req.shouldCloseResponseBody() {
 		defer req.Client.closeRawResponse(req)
 	}
 
@@ -75,4 +75,15 @@ func (req *Request) Do(method, pathFormat string, values ...any) error {
 
 func DoHTTPRequest(req *Request) (*http.Response, error) {
 	return req.Client.httpClient.Do(req.Raw)
+}
+
+func (req *Request) shouldCloseResponseBody() bool {
+	if req.Overridable.IsSuccess(req) && req.Response.WantsReadCloser() {
+		// When the caller wants a ReadCloser as result, we don't close
+		// the response body for the caller.
+		// But only for requests that were sucessful, so the caller still
+		// gets the error unmarshalling for free.
+		return false
+	}
+	return true
 }
