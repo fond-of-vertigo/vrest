@@ -79,6 +79,15 @@ func (req *Request) readResponseBody() error {
 		return nil
 	}
 
+	if req.Overridable.IsSuccess(req) {
+		// check if we should just return the response ReadCloser
+		if responseReadCloser, ok := req.Response.Body.(*io.ReadCloser); ok && responseReadCloser != nil {
+			*responseReadCloser = req.Response.Raw.Body
+			req.Response.DoUnmarshal = false
+			return nil
+		}
+	}
+
 	var r io.Reader = req.Response.Raw.Body
 	if req.Response.BodyLimit > 0 {
 		r = io.LimitReader(r, req.Response.BodyLimit)
@@ -132,6 +141,16 @@ func (resp *Response) WantsRawByteArray() bool {
 		return false
 	}
 	if responseBytesPointer, ok := resp.Body.(*[]byte); ok && responseBytesPointer != nil {
+		return true
+	}
+	return false
+}
+
+func (resp *Response) WantsReadCloser() bool {
+	if resp.Body == nil {
+		return false
+	}
+	if responseReadCloserPointer, ok := resp.Body.(*io.ReadCloser); ok && responseReadCloserPointer != nil {
 		return true
 	}
 	return false
