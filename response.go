@@ -149,7 +149,7 @@ func (resp *Response) WantsReadCloser() bool {
 	if resp.Body == nil {
 		return false
 	}
-	if responseBytesPointer, ok := resp.Body.(io.ReadCloser); ok && responseBytesPointer != nil {
+	if responseReadCloserPointer, ok := resp.Body.(*io.ReadCloser); ok && responseReadCloserPointer != nil {
 		return true
 	}
 	return false
