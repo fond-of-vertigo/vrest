@@ -72,7 +72,7 @@ func (req *Request) makeHTTPRequest() error {
 
 	if len(req.Header) > 0 {
 		req.Raw.Header = req.Header
-		if len(bodyBytes) == 0 {
+		if len(bodyBytes) == 0 && !req.bodyIsReader() {
 			req.Raw.Header.Del("Content-Type")
 		}
 	}
@@ -102,6 +102,13 @@ func (req *Request) makeRequestBody(body interface{}, contentType string) (io.Re
 		}
 		return bytes.NewReader(bodyBytes), bodyBytes, nil
 	}
+}
+
+func (req *Request) bodyIsReader() bool {
+	if r, ok := req.Body.(io.Reader); ok && r != nil {
+		return true
+	}
+	return false
 }
 
 func (req *Request) marshalRequestBody(body interface{}, contentType string) ([]byte, error) {
