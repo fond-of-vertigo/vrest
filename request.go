@@ -180,6 +180,11 @@ func (req *Request) SetResponseBodyLimit(limit int64) *Request {
 	return req
 }
 
+func (req *Request) SetResponseContentLengthPtr(contentLengthPtr *int64) *Request {
+	req.Response.ContentLengthPtr = contentLengthPtr
+	return req
+}
+
 func (req *Request) SetSuccessStatusCode(statusCodes ...int) *Request {
 	req.Response.SuccessStatusCodes = statusCodes
 	return req

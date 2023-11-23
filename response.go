@@ -19,6 +19,8 @@ type Response struct {
 	TraceBody   bool
 	DoUnmarshal bool
 
+	ContentLengthPtr *int64
+
 	SuccessStatusCodes []int
 }
 
@@ -29,6 +31,10 @@ func (req *Request) processHTTPResponse(rawResp *http.Response, err error) error
 	}
 	if rawResp == nil {
 		return fmt.Errorf("http request %s %s returned no response and no error", req.Raw.Method, req.Raw.URL)
+	}
+
+	if req.Response.ContentLengthPtr != nil {
+		*req.Response.ContentLengthPtr = req.Response.Raw.ContentLength
 	}
 
 	err = req.readResponseBody()
