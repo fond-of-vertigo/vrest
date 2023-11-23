@@ -11,18 +11,19 @@ import (
 )
 
 type Request struct {
-	Client      *Client
-	Context     context.Context
-	Raw         *http.Request
-	Method      string
-	Path        string
-	Header      http.Header
-	Query       url.Values
-	Body        interface{}
-	BodyBytes   []byte
-	Response    Response
-	Overridable Overridables
-	TraceBody   bool
+	Client        *Client
+	Context       context.Context
+	Raw           *http.Request
+	Method        string
+	Path          string
+	Header        http.Header
+	Query         url.Values
+	Body          interface{}
+	BodyBytes     []byte
+	ContentLength int64
+	Response      Response
+	Overridable   Overridables
+	TraceBody     bool
 }
 
 // NewRequest creates a new Request instance and initializes its fields with default values.
@@ -68,6 +69,9 @@ func (req *Request) makeHTTPRequest() error {
 	req.Raw, err = http.NewRequestWithContext(req.Context, req.Method, reqURL, reqBodyReader)
 	if err != nil {
 		return err
+	}
+	if req.ContentLength > 0 {
+		req.Raw.ContentLength = req.ContentLength
 	}
 
 	if len(req.Header) > 0 {
@@ -168,6 +172,11 @@ func (req *Request) SetQueryParam(key string, values ...string) *Request {
 
 func (req *Request) ContentType() string {
 	return req.Header.Get("Content-Type")
+}
+
+func (req *Request) SetContentLength(contentLength int64) *Request {
+	req.ContentLength = contentLength
+	return req
 }
 
 func (req *Request) SetResponseBody(value interface{}) *Request {
