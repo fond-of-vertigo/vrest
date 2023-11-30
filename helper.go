@@ -17,8 +17,11 @@ func IsJSONContentType(contentType string) bool {
 }
 
 func IsSuccess(req *Request) bool {
-	statusCode := req.Response.Raw.StatusCode
+	if req.Response.Raw == nil {
+		return false
+	}
 
+	statusCode := req.Response.Raw.StatusCode
 	if len(req.Response.SuccessStatusCodes) > 0 {
 		return slices.Contains(req.Response.SuccessStatusCodes, statusCode)
 	}

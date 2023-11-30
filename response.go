@@ -143,7 +143,7 @@ func (req *Request) unmarshalResponseBody(value interface{}) (bool, error) {
 }
 
 func (resp *Response) WantsRawByteArray() bool {
-	if resp.Body == nil {
+	if resp == nil || resp.Body == nil {
 		return false
 	}
 	if responseBytesPointer, ok := resp.Body.(*[]byte); ok && responseBytesPointer != nil {
@@ -153,7 +153,7 @@ func (resp *Response) WantsRawByteArray() bool {
 }
 
 func (resp *Response) WantsReadCloser() bool {
-	if resp.Body == nil {
+	if resp == nil || resp.Body == nil {
 		return false
 	}
 	if responseReadCloserPointer, ok := resp.Body.(*io.ReadCloser); ok && responseReadCloserPointer != nil {
