@@ -163,10 +163,16 @@ func (resp *Response) WantsReadCloser() bool {
 }
 
 func (resp *Response) HasEmptyBody() bool {
+	if resp.Raw == nil {
+		return false
+	}
 	return resp.Raw.Body == nil
 }
 
 func (resp *Response) StatusCode() int {
+	if resp.Raw == nil {
+		return 0
+	}
 	return resp.Raw.StatusCode
 }
 
@@ -175,5 +181,8 @@ func (resp *Response) ContentType() string {
 }
 
 func (resp *Response) Header() http.Header {
+	if resp.Raw == nil {
+		return http.Header{}
+	}
 	return resp.Raw.Header
 }
