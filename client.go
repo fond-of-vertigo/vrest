@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"log/slog"
 	"net/http"
 	"reflect"
@@ -46,6 +47,10 @@ type Overridables struct {
 
 	XMLUnmarshal func(req *Request, data []byte, v interface{}) error
 }
+
+var (
+	ErrResponseNotUnmarshaled = errors.New("response was not unmarshaled")
+)
 
 func New() *Client {
 	return NewWithTimeout(0)
