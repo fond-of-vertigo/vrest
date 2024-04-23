@@ -111,6 +111,9 @@ func (req *Request) readResponseBody() error {
 	return err
 }
 
+// unmarshalResponseBody unmarshals the response body into the given value.
+// It returns true if the response body was unmarshaled, false otherwise.
+// If there is a body and it was not unmarshaled, an error is returned.
 func (req *Request) unmarshalResponseBody(value interface{}) (bool, error) {
 	if !req.Response.DoUnmarshal {
 		return false, nil
@@ -137,6 +140,10 @@ func (req *Request) unmarshalResponseBody(value interface{}) (bool, error) {
 			return false, err
 		}
 		return true, nil
+	}
+
+	if len(req.Response.BodyBytes) > 0 {
+		return false, ErrResponseNotUnmarshaled
 	}
 
 	return false, nil

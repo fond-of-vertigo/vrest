@@ -24,6 +24,8 @@ type testBody struct {
 
 func TestClient_Do(t *testing.T) {
 
+	_ = newTestServer()
+
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(200)
