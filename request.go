@@ -26,9 +26,14 @@ type Request struct {
 	TraceBody     bool
 }
 
-// NewRequest creates a new Request instance and initializes its fields with default values.
-// It also sets the Content-Type and Authorization headers of the request if they are provided in the Client struct.
+// NewRequest is a shortcut for NewRequestWithContext(context.Background()).
 func (c *Client) NewRequest() *Request {
+	return c.NewRequestWithContext(context.Background())
+}
+
+// NewRequestWithContext creates a new Request instance and initializes its fields with default values.
+// It also sets the Content-Type and Authorization headers of the request if they are provided in the Client struct.
+func (c *Client) NewRequestWithContext(ctx context.Context) *Request {
 	req := &Request{
 		Client:      c,
 		Context:     context.Background(),
