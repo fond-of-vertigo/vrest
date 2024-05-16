@@ -36,7 +36,7 @@ func (c *Client) NewRequest() *Request {
 func (c *Client) NewRequestWithContext(ctx context.Context) *Request {
 	req := &Request{
 		Client:      c,
-		Context:     context.Background(),
+		Context:     ctx,
 		Header:      make(http.Header),
 		Query:       make(url.Values),
 		Overridable: c.Overridable,
