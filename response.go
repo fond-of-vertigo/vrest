@@ -59,7 +59,8 @@ func (req *Request) processHTTPResponse(rawResp *http.Response, err error) error
 	}
 
 	didUnmarshal, err := req.unmarshalResponseBody(responseValue)
-	if err != nil {
+	if success && err != nil {
+		// treat unmarshaling error as a failure only if the response is successful
 		return fmt.Errorf("http request %s %s failed to unmarshal response body: %w", req.Raw.Method, req.Raw.URL, err)
 	}
 
