@@ -1,6 +1,6 @@
 module github.com/fond-of-vertigo/vrest/examples
 
-go 1.21.0
+go 1.23.0
 
 replace github.com/fond-of-vertigo/vrest => ../../vrest
 
