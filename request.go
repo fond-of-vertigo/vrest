@@ -143,26 +143,31 @@ func (req *Request) makeRequestURL(baseURL, requestURL string) string {
 	return requestURL
 }
 
+// SetContext sets the context of the request.
 func (req *Request) SetContext(ctx context.Context) *Request {
 	req.Context = ctx
 	return req
 }
 
+// SetBody sets the body of the request.
 func (req *Request) SetBody(body interface{}) *Request {
 	req.Body = body
 	return req
 }
 
+// SetTraceRequestBody sets the TraceBody field of the request.
 func (req *Request) SetTraceRequestBody(value bool) *Request {
 	req.TraceBody = value
 	return req
 }
 
+// SetTraceResponseBody sets the TraceBody field of the response.
 func (req *Request) SetTraceResponseBody(value bool) *Request {
 	req.Response.TraceBody = value
 	return req
 }
 
+// SetQueryParamIf sets the query parameter of the request when the condition matches.
 func (req *Request) SetQueryParamIf(condition bool, key string, values ...string) *Request {
 	if condition {
 		return req.SetQueryParam(key, values...)
@@ -170,79 +175,100 @@ func (req *Request) SetQueryParamIf(condition bool, key string, values ...string
 	return req
 }
 
+// SetQueryParam sets the query parameter of the request.
 func (req *Request) SetQueryParam(key string, values ...string) *Request {
 	req.Query[key] = values
 	return req
 }
 
+// ContentType returns the Content-Type header of the request.
 func (req *Request) ContentType() string {
 	return req.Header.Get("Content-Type")
 }
 
+// SetContentLength sets the Content-Length header of the request.
 func (req *Request) SetContentLength(contentLength int64) *Request {
 	req.ContentLength = contentLength
 	return req
 }
 
+// SetResponseBody sets the body of the response.
 func (req *Request) SetResponseBody(value interface{}) *Request {
 	req.Response.Body = value
 	return req
 }
 
+// SetResponseBodyLimit sets the limit of the response body.
 func (req *Request) SetResponseBodyLimit(limit int64) *Request {
 	req.Response.BodyLimit = limit
 	return req
 }
 
+// SetResponseContentLengthPtr sets the Content-Length based on a pointer.
 func (req *Request) SetResponseContentLengthPtr(contentLengthPtr *int64) *Request {
 	req.Response.ContentLengthPtr = contentLengthPtr
 	return req
 }
 
+// SetSuccessStatusCode sets the success status code of the response.
 func (req *Request) SetSuccessStatusCode(statusCodes ...int) *Request {
 	req.Response.SuccessStatusCodes = statusCodes
 	return req
 }
 
+// ForceResponseJSON forces the response to be JSON.
+// This is useful when the server does not return the correct Content-Type header.
 func (req *Request) ForceResponseJSON() *Request {
 	req.Response.ForceJSON = true
 	return req
 }
 
+// ForceResponseXML forces the response to be XML.
+// This is useful when the server does not return the correct Content-Type header.
 func (req *Request) ForceResponseXML() *Request {
 	req.Response.ForceXML = true
 	return req
 }
 
+// SetResponseErrorBody sets the error body of the response.
 func (req *Request) SetResponseErrorBody(value interface{}) *Request {
 	req.Response.ErrorBody = value
 	return req
 }
 
+// SetBasicAuth sets the basic authentication of the request.
+// The username and password are separated by a colon and then base64 encoded.
 func (req *Request) SetBasicAuth(username, password string) *Request {
 	return req.SetAuthorization("Basic " + encodeBasicAuth(username, password))
 }
 
+// SetBearerAuth sets the bearer authentication of the request.
+// The token should not contain the "Bearer " prefix.
 func (req *Request) SetBearerAuth(token string) *Request {
 	return req.SetAuthorization("Bearer " + token)
 }
 
+// SetContentTypeJSON sets the Content-Type header of the request to "application/json".
 func (req *Request) SetContentTypeJSON() *Request {
 	return req.SetContentType("application/json")
 }
 
+// SetContentTypeXML sets the Content-Type header of the request to "text/xml".
 func (req *Request) SetContentTypeXML() *Request {
 	return req.SetContentType("text/xml")
 }
 
+// SetContentType sets a custom Content-Type header of the request.
 func (req *Request) SetContentType(contentType string) *Request {
 	return req.SetHeader("Content-Type", contentType)
 }
 
+// SetAuthorization sets the Authorization header of the request to a custom authentication string.
 func (req *Request) SetAuthorization(authValue string) *Request {
 	return req.SetHeader("Authorization", authValue)
 }
 
+// SetHeaderIf sets the header of the request when the condition matches.
 func (req *Request) SetHeaderIf(condition bool, key string, value string) *Request {
 	if condition {
 		return req.SetHeader(key, value)
@@ -250,6 +276,7 @@ func (req *Request) SetHeaderIf(condition bool, key string, value string) *Reque
 	return req
 }
 
+// SetHeader sets the header of the request.
 func (req *Request) SetHeader(key string, value string) *Request {
 	req.Header.Set(key, value)
 	return req
