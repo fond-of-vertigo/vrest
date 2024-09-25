@@ -12,6 +12,7 @@ import (
 	"testing"
 )
 
+// MockDoer is a function that returns a function that can be used to mock the Do method of a Request.
 func MockDoer(responseValue interface{}, err error) Doer {
 	return func(req *Request) error {
 		return mockSetResponseValue(req, responseValue)
@@ -66,6 +67,7 @@ func MockHTTPDoer(p *MockHTTPResponse, additionalHeaders ...string) HTTPDoer {
 	}
 }
 
+// MockJSONResponseFromFile creates a MockHTTPResponse with a JSON body read from a file.
 func MockJSONResponseFromFile(t *testing.T, statusCode int, filePath string) *MockHTTPResponse {
 	return &MockHTTPResponse{
 		StatusCode:  statusCode,
@@ -74,6 +76,7 @@ func MockJSONResponseFromFile(t *testing.T, statusCode int, filePath string) *Mo
 	}
 }
 
+// MockJSONResponse creates a MockHTTPResponse with a JSON body.
 func MockJSONResponse(statusCode int, body string) *MockHTTPResponse {
 	return &MockHTTPResponse{
 		StatusCode:  statusCode,
@@ -82,6 +85,7 @@ func MockJSONResponse(statusCode int, body string) *MockHTTPResponse {
 	}
 }
 
+// MockXMLResponseFromFile creates a MockHTTPResponse with an XML body read from a file.
 func MockXMLResponseFromFile(t *testing.T, statusCode int, filePath string) *MockHTTPResponse {
 	return &MockHTTPResponse{
 		StatusCode:  statusCode,
@@ -90,6 +94,7 @@ func MockXMLResponseFromFile(t *testing.T, statusCode int, filePath string) *Moc
 	}
 }
 
+// MockXMLResponse creates a MockHTTPResponse with an XML body.
 func MockXMLResponse(statusCode int, body string) *MockHTTPResponse {
 	return &MockHTTPResponse{
 		StatusCode:  statusCode,
@@ -98,6 +103,7 @@ func MockXMLResponse(statusCode int, body string) *MockHTTPResponse {
 	}
 }
 
+// MustReadFile reads a file and returns its contents. If the file cannot be read, the test will fail.
 func MustReadFile(t *testing.T, path string) []byte {
 	t.Helper()
 	bytes, err := os.ReadFile(filepath.Clean(path))
