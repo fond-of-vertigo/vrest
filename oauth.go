@@ -68,6 +68,7 @@ func (t *OAuthToken) Token() string {
 	if t == nil {
 		return ""
 	}
+
 	return t.AccessToken
 }
 
@@ -77,5 +78,6 @@ func (t *OAuthToken) NeedsRefresh() bool {
 	if t == nil || t.AccessToken == "" {
 		return true
 	}
+
 	return time.Now().After(t.ValidUntil)
 }
