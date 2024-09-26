@@ -106,8 +106,11 @@ func (c *Client) SetTraceBodies(value bool) *Client {
 	return c
 }
 
-// SetErrorBodyType sets the type of the error body.
-// This is used when unmarshaling the error body.
+// SetErrorBodyType extracts the type info from the value
+// parameter and sets it as the error body type for the client.
+// This is used when a IsSuccess() returns false to unmarshal
+// the body to the given type.
+// The unmarhsaled error will be part of the returned error.
 func (c *Client) SetErrorBodyType(value error) *Client {
 	c.ErrorType = typeOf(value)
 	return c
@@ -119,17 +122,20 @@ func (c *Client) SetBaseURL(baseURL string) *Client {
 	return c
 }
 
-// SetContentTypeJSON sets the content type to application/json.
+// SetContentTypeJSON sets the default content type
+// for request bodies to application/json.
 func (c *Client) SetContentTypeJSON() *Client {
 	return c.SetContentType("application/json")
 }
 
-// SetContentTypeXML sets the content type to text/xml.
+// SetContentTypeXML sets the default content type
+// for request bodies to text/xml.
 func (c *Client) SetContentTypeXML() *Client {
 	return c.SetContentType("text/xml")
 }
 
-// SetContentType sets the customt content type for the client.
+// SetContentType sets the default content type
+// for request bodies to the given type.
 func (c *Client) SetContentType(contentType string) *Client {
 	c.ContentType = contentType
 	return c
@@ -153,12 +159,15 @@ func (c *Client) SetAuthorization(auth string) *Client {
 
 // SetResponseBodyLimit sets the response body limit for the client.
 // If the response body is larger than the limit, it will be truncated.
+// If the limit is 0, the response body will not be limited which can be
+// used by an attacker to perform a DoS attack.
 func (c *Client) SetResponseBodyLimit(limit int64) *Client {
 	c.ResponseBodyLimit = limit
 	return c
 }
 
-// JSONMarshal marshals the given value into JSON.
+// JSONMarshal marshals the given value into JSON
+// without escaping HTML characters.
 func JSONMarshal(req *Request, v interface{}) ([]byte, error) {
 	buffer := &bytes.Buffer{}
 	encoder := json.NewEncoder(buffer)
