@@ -1,22 +1,25 @@
-package main_test
+package vrest_test
 
 import (
 	"fmt"
+	"net/http"
+	"time"
 
 	"github.com/fond-of-vertigo/vrest"
 )
 
-func ExampleRequest_SetHeader() {
-	client := vrest.New()
+func ExampleNewWithClient() {
+	client := vrest.NewWithClient(&http.Client{
+		Timeout: 10 * time.Second,
+	})
+
 	respBody := make(map[string]interface{})
 
 	err := client.NewRequest().
 		SetResponseBody(&respBody).
-		SetHeader("my-header", "my-value").
 		DoGet("https://jsonplaceholder.typicode.com/todos/1")
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		panic(err)
 	}
 
 	fmt.Println("Response:", respBody)
