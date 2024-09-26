@@ -24,6 +24,8 @@ type Response struct {
 	SuccessStatusCodes []int
 }
 
+// processHTTPResponse processes the raw http response and sets the response fields.
+// It returns an error if the response is not successful or if the response body could not be read.
 func (req *Request) processHTTPResponse(rawResp *http.Response, err error) error {
 	req.Response.Raw = rawResp
 	if err != nil {
@@ -51,6 +53,8 @@ func (req *Request) processHTTPResponse(rawResp *http.Response, err error) error
 	}
 
 	responseValue := req.Response.Body
+
+	// if the response is not successful, unmarshal the error body
 	if !success && req.Response.DoUnmarshal {
 		if req.Response.ErrorBody == nil && req.Client.ErrorType != nil {
 			req.Response.ErrorBody = reflect.New(req.Client.ErrorType).Interface()
@@ -72,15 +76,20 @@ func (req *Request) processHTTPResponse(rawResp *http.Response, err error) error
 			default:
 				return fmt.Errorf("http request %s %s failed: %s", req.Raw.Method, req.Raw.URL, responseValue)
 			}
-		} else {
-			msg := string(req.Response.BodyBytes)
-			return fmt.Errorf("http request %s %s failed: %s", req.Raw.Method, req.Raw.URL, msg)
 		}
+
+		msg := string(req.Response.BodyBytes)
+		return fmt.Errorf("http request %s %s failed: %s", req.Raw.Method, req.Raw.URL, msg)
 	}
 
 	return nil
 }
 
+// readResponseBody reads the response body and sets the response body bytes.
+// It returns an error if the response body could not be read.
+// It does not read the body if the response body is of type io.ReadCloser.
+// It checks for a response body limit and reads only up to that limit, if
+// request.SetResponseBodyLimit was called.
 func (req *Request) readResponseBody() error {
 	if req.Response.Raw.Body == nil {
 		return nil
@@ -150,6 +159,7 @@ func (req *Request) unmarshalResponseBody(value interface{}) (bool, error) {
 	return false, nil
 }
 
+// WantsRawByteArray returns whether the response wants a raw byte array.
 func (resp *Response) WantsRawByteArray() bool {
 	if resp == nil || resp.Body == nil {
 		return false
@@ -160,6 +170,8 @@ func (resp *Response) WantsRawByteArray() bool {
 	return false
 }
 
+// WantsReadCloser returns whether the response wants a ReadCloser
+// which is useful for streaming the response body.
 func (resp *Response) WantsReadCloser() bool {
 	if resp == nil || resp.Body == nil {
 		return false
@@ -170,6 +182,7 @@ func (resp *Response) WantsReadCloser() bool {
 	return false
 }
 
+// HasEmptyBody returns whether the response has an empty body.
 func (resp *Response) HasEmptyBody() bool {
 	if resp.Raw == nil {
 		return false
@@ -177,6 +190,7 @@ func (resp *Response) HasEmptyBody() bool {
 	return resp.Raw.Body == nil
 }
 
+// StatusCode returns the status code of the response.
 func (resp *Response) StatusCode() int {
 	if resp.Raw == nil {
 		return 0
@@ -184,10 +198,12 @@ func (resp *Response) StatusCode() int {
 	return resp.Raw.StatusCode
 }
 
+// ContentType returns the Content-Type header of the response.
 func (resp *Response) ContentType() string {
 	return resp.Header().Get("Content-Type")
 }
 
+// Header returns the header map of the response.
 func (resp *Response) Header() http.Header {
 	if resp.Raw == nil {
 		return http.Header{}
