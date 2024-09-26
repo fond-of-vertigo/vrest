@@ -18,7 +18,10 @@ type Token interface {
 
 // TokenGetter is a function that returns a new token.
 // No locking is required in the implementation of this function.
+// vrest will take care of locking.
 type TokenGetter interface {
+	// GetToken returns a new or refreshed token.
+	// If a previous token exists, it is passed as oldToken.
 	GetToken(ctx context.Context, oldToken Token) (Token, error)
 }
 

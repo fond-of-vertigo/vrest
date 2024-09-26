@@ -54,7 +54,10 @@ type Overridables struct {
 	XMLUnmarshal func(req *Request, data []byte, v interface{}) error
 }
 
-var ErrResponseNotUnmarshaled = errors.New("response was not unmarshaled")
+var (
+	ErrResponseNotUnmarshaled = errors.New("response was not unmarshaled")
+	ErrInvalidRequest         = errors.New("invalid request")
+)
 
 // New creates a new client with a default timeout of 0.
 // This means that the client will not have a timeout.
@@ -156,7 +159,7 @@ func (c *Client) SetBearerAuth(token string) *Client {
 }
 
 // SetOAuth sets the OAuth configuration for the client.
-// This automatically enables the token getter for the client.
+// This automatically sets the oauth token getter for the client.
 func (c *Client) SetOAuth(cfg OAuthConfig) *Client {
 	return c.SetTokenGetter(&oauthTokenGetter{
 		config: cfg,
@@ -164,7 +167,7 @@ func (c *Client) SetOAuth(cfg OAuthConfig) *Client {
 	})
 }
 
-// SetTokenGetter sets custom token getter for the client.
+// SetTokenGetter sets a custom token getter for the client.
 // See the readme and examples for how to implement a custom token getter.
 func (c *Client) SetTokenGetter(tokenGetter TokenGetter) *Client {
 	c.TokenGetter = tokenGetter

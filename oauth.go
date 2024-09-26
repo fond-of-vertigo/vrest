@@ -9,6 +9,7 @@ import (
 
 var ErrOAuthTokenRequestFailed = errors.New("failed to get new oauth token")
 
+// OAuthConfig is the configuration for an OAuth token request.
 type OAuthConfig struct {
 	URL          string
 	GrantType    string
@@ -17,12 +18,15 @@ type OAuthConfig struct {
 	ClientSecret string
 }
 
+// OAuthToken is an OAuth token.
 type OAuthToken struct {
-	AccessToken  string    `json:"access_token"`
-	TokenType    string    `json:"token_type"`
-	ExpiresIn    int       `json:"expires_in"`
-	ExtExpiresIn int       `json:"ext_expires_in"`
-	ValidUntil   time.Time `json:"-"`
+	AccessToken  string `json:"access_token"`
+	TokenType    string `json:"token_type"`
+	ExpiresIn    int    `json:"expires_in"`
+	ExtExpiresIn int    `json:"ext_expires_in"`
+	// ValidUntil is the time when the token is no longer valid.
+	// It is calculated when a new token is received.
+	ValidUntil time.Time `json:"-"`
 }
 
 type oauthTokenGetter struct {
@@ -30,6 +34,8 @@ type oauthTokenGetter struct {
 	client *Client
 }
 
+// GetToken is a TokenGetter implementation that requests a new OAuth token.
+// No synchronization or locking is required in this function.
 func (o *oauthTokenGetter) GetToken(ctx context.Context, oldToken Token) (Token, error) {
 	body := url.Values{}
 	body.Add("grant_type", o.config.GrantType)
@@ -56,6 +62,7 @@ func (o *oauthTokenGetter) GetToken(ctx context.Context, oldToken Token) (Token,
 	return &token, nil
 }
 
+// Token returns the actual token.
 func (t *OAuthToken) Token() string {
 	if t == nil {
 		return ""
@@ -63,6 +70,8 @@ func (t *OAuthToken) Token() string {
 	return t.AccessToken
 }
 
+// NeedsRefresh returns true if the token needs to be refreshed.
+// There is a safety margin of 5 minutes.
 func (t *OAuthToken) NeedsRefresh() bool {
 	if t == nil || t.AccessToken == "" {
 		return true

@@ -10,8 +10,8 @@ import (
 type Response struct {
 	Raw         *http.Response
 	Error       error
-	Body        interface{}
-	ErrorBody   interface{}
+	Body        any
+	ErrorBody   any
 	ForceJSON   bool
 	ForceXML    bool
 	BodyBytes   []byte

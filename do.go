@@ -3,6 +3,7 @@ package vrest
 import (
 	"fmt"
 	"net/http"
+	"reflect"
 )
 
 // Do sends the request.
@@ -19,7 +20,6 @@ func Do(req *Request) error {
 		defer trace.End()
 	}
 
-	// Saving the actual HTTP request in the raw response.
 	req.Response.Raw, err = req.Overridable.DoHTTPRequest(req)
 	if req.shouldCloseResponseBody() {
 		defer req.Client.closeRawResponse(req)
@@ -174,6 +174,12 @@ func (req *Request) Dof(method, pathFormat string, values ...any) error {
 func (req *Request) Do(method, path string) error {
 	req.Method = method
 	req.Path = path
+
+	err := req.validateBeforeDo()
+	if err != nil {
+		return err
+	}
+
 	return req.Client.Overridable.Do(req)
 }
 
@@ -191,4 +197,11 @@ func (req *Request) shouldCloseResponseBody() bool {
 		return false
 	}
 	return true
+}
+
+func (req *Request) validateBeforeDo() error {
+	if req.Response.Body != nil && reflect.ValueOf(req.Response.Body).Kind() != reflect.Ptr {
+		return fmt.Errorf("%w: the value you passed to request.SetResponseBody() must be a pointer", ErrInvalidRequest)
+	}
+	return nil
 }

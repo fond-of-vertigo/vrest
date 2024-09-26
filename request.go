@@ -171,7 +171,7 @@ func (req *Request) SetBaseURL(baseURL string) *Request {
 
 // SetBody sets the body of the request.
 // This is only needed in rare cases, like token requests.
-func (req *Request) SetBody(body interface{}) *Request {
+func (req *Request) SetBody(body any) *Request {
 	req.Body = body
 	return req
 }
@@ -224,8 +224,8 @@ func (req *Request) SetContentLength(contentLength int64) *Request {
 // If you pass a pointer to an io.ReadCloser here, you can get
 // the content length by using SetResponseContentLengthPtr(),
 // if the server provides the Content-Length header.
-func (req *Request) SetResponseBody(value interface{}) *Request {
-	req.Response.Body = value
+func (req *Request) SetResponseBody(valuePtr any) *Request {
+	req.Response.Body = valuePtr
 	return req
 }
 
