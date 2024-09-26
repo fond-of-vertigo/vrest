@@ -53,6 +53,7 @@ func (c *Client) NewRequestWithContext(ctx context.Context) *Request {
 	if c.ContentType != "" {
 		req.SetContentType(c.ContentType)
 	}
+
 	if c.Authorization != "" {
 		req.SetAuthorization(c.Authorization)
 	}
@@ -71,12 +72,14 @@ func (req *Request) makeHTTPRequest() error {
 	if err != nil {
 		return err
 	}
+
 	req.BodyBytes = bodyBytes
 
 	req.Raw, err = http.NewRequestWithContext(req.Context, req.Method, reqURL, reqBodyReader)
 	if err != nil {
 		return err
 	}
+
 	if req.ContentLength > 0 {
 		req.Raw.ContentLength = req.ContentLength
 	}

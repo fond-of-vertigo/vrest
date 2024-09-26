@@ -106,10 +106,12 @@ func MockXMLResponse(statusCode int, body string) *MockHTTPResponse {
 // MustReadFile reads a file and returns its contents. If the file cannot be read, the test will fail.
 func MustReadFile(t *testing.T, path string) []byte {
 	t.Helper()
+
 	bytes, err := os.ReadFile(filepath.Clean(path))
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	return bytes
 }
 
@@ -117,6 +119,7 @@ func mockSetResponseValue(req *Request, value interface{}) error {
 	if req.Response.Body == nil {
 		return fmt.Errorf("req.Response.Body is nil")
 	}
+
 	if value == nil {
 		return nil
 	}

@@ -57,7 +57,9 @@ type atomicToken struct {
 
 func (t *atomicToken) Load() Token {
 	if val := t.value.Load(); val != nil {
-		return val.(Token)
+		if token, ok := val.(Token); ok {
+			return token
+		}
 	}
 	return nil
 }

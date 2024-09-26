@@ -55,10 +55,10 @@ func (o *oauthTokenGetter) GetToken(ctx context.Context, oldToken Token) (Token,
 		return nil, errors.Join(ErrOAuthTokenRequestFailed, err)
 	}
 
-	safetyMarginSeconds := 5 * time.Minute
+	safetyMarginMinutes := 5
 	token.ValidUntil = time.Now().
 		Add(time.Duration(token.ExpiresIn) * time.Second).
-		Add(safetyMarginSeconds * -1)
+		Add(time.Duration(safetyMarginMinutes) * time.Minute * -1)
 	return &token, nil
 }
 

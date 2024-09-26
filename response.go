@@ -47,7 +47,8 @@ func (req *Request) processHTTPResponse(rawResp *http.Response, err error) error
 	success := req.Overridable.IsSuccess(req)
 	if req.Response.HasEmptyBody() {
 		if !success {
-			return fmt.Errorf("http request %s %s failed with status code %d", req.Raw.Method, req.Raw.URL, req.Response.StatusCode())
+			return fmt.Errorf("http request %s %s failed with status code %d",
+				req.Raw.Method, req.Raw.URL, req.Response.StatusCode())
 		}
 		return nil
 	}

@@ -1,0 +1,60 @@
+run:
+  allow-parallel-runners: true
+
+output:
+  sort-results: true
+
+linters:
+  enable:
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - contextcheck
+    - copyloopvar
+    - dupl
+    - errname
+    - errorlint
+    - forcetypeassert
+    - funlen
+    - gocognit
+    - goconst
+    - godot
+    - gofumpt
+    - goprintffuncname
+    - gosec
+    - lll
+    - misspell
+    - mnd
+    - nestif
+    - nilerr
+    - reassign
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - sloglint
+    - spancheck
+    - wsl
+    - unconvert
+    - wastedassign
+
+issues:
+  max-same-issues: 0
+  exclude-use-default: false
+  exclude:
+    - should have a package comment
+
+linters-settings:
+  funlen:
+    lines: 100
+    statements: 50
+    ignore-comments: true
+
+  gocognit:
+    min-complexity: 20
+
+  revive:
+    rules:
+      - name: package-comments
+        disabled: true
+      - name: blank-imports
+        disabled: true
