@@ -44,7 +44,6 @@ func (req *Request) processHTTPResponse(rawResp *http.Response, err error) error
 		return fmt.Errorf("http request %s %s failed to read response body: %w", req.Raw.Method, req.Raw.URL, err)
 	}
 
-	// check if the response status code is successful (2xx)
 	success := req.Overridable.IsSuccess(req)
 	if req.Response.HasEmptyBody() {
 		if !success {
@@ -88,6 +87,9 @@ func (req *Request) processHTTPResponse(rawResp *http.Response, err error) error
 
 // readResponseBody reads the response body and sets the response body bytes.
 // It returns an error if the response body could not be read.
+// It does not read the body if the response body is of type io.ReadCloser.
+// It checks for a response body limit and reads only up to that limit, if
+// request.SetResponseBodyLimit was called.
 func (req *Request) readResponseBody() error {
 	if req.Response.Raw.Body == nil {
 		return nil
@@ -168,7 +170,8 @@ func (resp *Response) WantsRawByteArray() bool {
 	return false
 }
 
-// WantsReadCloser returns whether the response wants a ReadCloser.
+// WantsReadCloser returns whether the response wants a ReadCloser
+// which is useful for streaming the response body.
 func (resp *Response) WantsReadCloser() bool {
 	if resp == nil || resp.Body == nil {
 		return false
