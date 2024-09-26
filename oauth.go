@@ -1,0 +1,71 @@
+package vrest
+
+import (
+	"context"
+	"errors"
+	"net/url"
+	"time"
+)
+
+var ErrOAuthTokenRequestFailed = errors.New("failed to get new oauth token")
+
+type OAuthConfig struct {
+	URL          string
+	GrantType    string
+	Scope        string
+	ClientID     string
+	ClientSecret string
+}
+
+type OAuthToken struct {
+	AccessToken  string    `json:"access_token"`
+	TokenType    string    `json:"token_type"`
+	ExpiresIn    int       `json:"expires_in"`
+	ExtExpiresIn int       `json:"ext_expires_in"`
+	ValidUntil   time.Time `json:"-"`
+}
+
+type oauthTokenGetter struct {
+	config OAuthConfig
+	client *Client
+}
+
+func (o *oauthTokenGetter) GetToken(ctx context.Context, oldToken Token) (Token, error) {
+	body := url.Values{}
+	body.Add("grant_type", o.config.GrantType)
+	body.Add("scope", o.config.Scope)
+	body.Add("client_id", o.config.ClientID)
+	body.Add("client_secret", o.config.ClientSecret)
+
+	var token OAuthToken
+	err := o.client.NewRequestWithContext(ctx).
+		SetBaseURL(o.config.URL).
+		SetContentType("application/x-www-form-urlencoded").
+		SetBody(body.Encode()).
+		SetTokenRequest().
+		SetResponseBody(&token).
+		DoPost("")
+	if err != nil {
+		return nil, errors.Join(ErrOAuthTokenRequestFailed, err)
+	}
+
+	safetyMarginSeconds := 5 * time.Minute
+	token.ValidUntil = time.Now().
+		Add(time.Duration(token.ExpiresIn) * time.Second).
+		Add(safetyMarginSeconds * -1)
+	return &token, nil
+}
+
+func (t *OAuthToken) Token() string {
+	if t == nil {
+		return ""
+	}
+	return t.AccessToken
+}
+
+func (t *OAuthToken) NeedsRefresh() bool {
+	if t == nil || t.AccessToken == "" {
+		return true
+	}
+	return time.Now().After(t.ValidUntil)
+}

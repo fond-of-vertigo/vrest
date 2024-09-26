@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"reflect"
+	"sync"
 	"time"
 )
 
@@ -24,6 +25,7 @@ type Client struct {
 
 	ContentType   string
 	Authorization string
+	TokenGetter   TokenGetter
 
 	ErrorType reflect.Type
 
@@ -32,6 +34,8 @@ type Client struct {
 	httpClient *http.Client
 	traceMaker TraceMaker
 	logger     *slog.Logger
+	token      atomicToken
+	tokenMutex sync.Mutex
 }
 
 type Overridables struct {
@@ -149,6 +153,22 @@ func (c *Client) SetBasicAuth(username, password string) *Client {
 // SetBearerAuth sets the bearer auth header for the client.
 func (c *Client) SetBearerAuth(token string) *Client {
 	return c.SetAuthorization("Bearer " + token)
+}
+
+// SetOAuth sets the OAuth configuration for the client.
+// This automatically enables the token getter for the client.
+func (c *Client) SetOAuth(cfg OAuthConfig) *Client {
+	return c.SetTokenGetter(&oauthTokenGetter{
+		config: cfg,
+		client: c,
+	})
+}
+
+// SetTokenGetter sets custom token getter for the client.
+// See the readme and examples for how to implement a custom token getter.
+func (c *Client) SetTokenGetter(tokenGetter TokenGetter) *Client {
+	c.TokenGetter = tokenGetter
+	return c
 }
 
 // SetAuthorization sets the authorization header for the client.

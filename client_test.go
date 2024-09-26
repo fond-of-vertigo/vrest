@@ -23,7 +23,6 @@ type testBody struct {
 }
 
 func TestClient_Do(t *testing.T) {
-
 	_ = newTestServer()
 
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -44,18 +43,17 @@ func TestClient_Do(t *testing.T) {
 		SetBaseURL(testServer.URL).
 		SetErrorBodyType(testError{})
 
-	//client.Overridable.Do = MockDoer(testBody{Text: "text", Number: 456}, nil)
-	//client.Overridable.Do = MockDoer(nil, &testError{Message1: "xyz", Message2: "abc"})
+	// client.Overridable.Do = MockDoer(testBody{Text: "text", Number: 456}, nil)
+	// client.Overridable.Do = MockDoer(nil, &testError{Message1: "xyz", Message2: "abc"})
 
-	//client.Overridable.DoHTTPRequest = MockHTTPDoer(MockHTTPParams{}, "X-API-Key", "")
-	//client.Overridable.DoHTTPRequest = MockHTTPDoer(MockJSONResponse(200, `{"text": "test", "number": 123}`))
-	//client.Overridable.DoHTTPRequest = MockHTTPDoer(MockJSONResponse(400, `{"message1": "test", "message2": "m2"}`))
+	// client.Overridable.DoHTTPRequest = MockHTTPDoer(MockHTTPParams{}, "X-API-Key", "")
+	// client.Overridable.DoHTTPRequest = MockHTTPDoer(MockJSONResponse(200, `{"text": "test", "number": 123}`))
+	// client.Overridable.DoHTTPRequest = MockHTTPDoer(MockJSONResponse(400, `{"message1": "test", "message2": "m2"}`))
 
 	respBody := testBody{}
 	err := client.NewRequest().
 		SetResponseBody(&respBody).
 		DoGet("/test")
-
 	if err != nil {
 		var e2 *testError
 		if errors.As(err, &e2) {
