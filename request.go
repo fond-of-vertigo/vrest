@@ -156,12 +156,14 @@ func (req *Request) SetBody(body interface{}) *Request {
 }
 
 // SetTraceRequestBody sets the TraceBody field of the request.
+// Used to determine if the request body should be traced.
 func (req *Request) SetTraceRequestBody(value bool) *Request {
 	req.TraceBody = value
 	return req
 }
 
 // SetTraceResponseBody sets the TraceBody field of the response.
+// Used to determine if the response body should be traced.
 func (req *Request) SetTraceResponseBody(value bool) *Request {
 	req.Response.TraceBody = value
 	return req
@@ -193,6 +195,14 @@ func (req *Request) SetContentLength(contentLength int64) *Request {
 }
 
 // SetResponseBody sets the body of the response.
+// The value must be a pointer.
+// Normally you would pass a pointer to a struct here to get
+// the response unmarshaled into that struct.
+// You can also pass a pointer to a []byte or io.ReadCloser
+// to get the raw response body.
+// If you pass a pointer to an io.ReadCloser here, you can get
+// the content length by using SetResponseContentLengthPtr(),
+// if the server provides the Content-Length header.
 func (req *Request) SetResponseBody(value interface{}) *Request {
 	req.Response.Body = value
 	return req
@@ -205,25 +215,29 @@ func (req *Request) SetResponseBodyLimit(limit int64) *Request {
 }
 
 // SetResponseContentLengthPtr sets the Content-Length based on a pointer.
+// If the server provides the Content-Length header, the value will be set.
+// This can be used if you want to handle the response body as a stream,
+// for example for binary file downloads.
 func (req *Request) SetResponseContentLengthPtr(contentLengthPtr *int64) *Request {
 	req.Response.ContentLengthPtr = contentLengthPtr
 	return req
 }
 
 // SetSuccessStatusCode sets the success status code of the response.
+// The values are used in the IsSuccess function of the client.
 func (req *Request) SetSuccessStatusCode(statusCodes ...int) *Request {
 	req.Response.SuccessStatusCodes = statusCodes
 	return req
 }
 
-// ForceResponseJSON forces the response to be JSON.
+// ForceResponseJSON forces JSON unmarhsalling of the response.
 // This is useful when the server does not return the correct Content-Type header.
 func (req *Request) ForceResponseJSON() *Request {
 	req.Response.ForceJSON = true
 	return req
 }
 
-// ForceResponseXML forces the response to be XML.
+// ForceResponseXML forces XML unmarhsalling of the response.
 // This is useful when the server does not return the correct Content-Type header.
 func (req *Request) ForceResponseXML() *Request {
 	req.Response.ForceXML = true
@@ -249,11 +263,13 @@ func (req *Request) SetBearerAuth(token string) *Request {
 }
 
 // SetContentTypeJSON sets the Content-Type header of the request to "application/json".
+// You can also set this as the default in the Client setup.
 func (req *Request) SetContentTypeJSON() *Request {
 	return req.SetContentType("application/json")
 }
 
 // SetContentTypeXML sets the Content-Type header of the request to "text/xml".
+// You can also set this as the default in the Client setup.
 func (req *Request) SetContentTypeXML() *Request {
 	return req.SetContentType("text/xml")
 }
