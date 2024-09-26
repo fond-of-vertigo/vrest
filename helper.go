@@ -8,14 +8,22 @@ import (
 	"strings"
 )
 
+// IsXMLContentType checks whether the content type is XML.
 func IsXMLContentType(contentType string) bool {
 	return strings.Index(contentType, "/xml") > 0
 }
 
+// IsJSONContentType checks whether the content type is JSON.
 func IsJSONContentType(contentType string) bool {
 	return strings.Index(contentType, "/json") > 0
 }
 
+// IsSuccess reports whether the given request status code is a success.
+// This is the default implementation and can be overridden by
+// setting c.Overridable.IsSuccess.
+// By default a success is a status code between 200 and 299.
+// The success status codes can be overridden by setting
+// request.SetSuccessStatusCode() for a single requests.
 func IsSuccess(req *Request) bool {
 	if req.Response.Raw == nil {
 		return false
