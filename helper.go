@@ -23,7 +23,7 @@ func IsJSONContentType(contentType string) bool {
 // setting c.Overridable.IsSuccess.
 // By default a success is a status code between 200 and 299.
 // The success status codes can be overridden by setting
-// request.SetSuccessStatusCode().
+// request.SetSuccessStatusCode() for a single requests.
 func IsSuccess(req *Request) bool {
 	if req.Response.Raw == nil {
 		return false
