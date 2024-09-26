@@ -175,8 +175,7 @@ func (req *Request) Do(method, path string) error {
 	req.Method = method
 	req.Path = path
 
-	err := req.validateBeforeDo()
-	if err != nil {
+	if err := req.validateBeforeDo(); err != nil {
 		return err
 	}
 
