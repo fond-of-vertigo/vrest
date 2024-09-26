@@ -8,11 +8,14 @@ import (
 	"log/slog"
 	"net/http"
 	"reflect"
+	"sync"
 	"time"
 )
 
-type Doer func(req *Request) error
-type HTTPDoer func(req *Request) (*http.Response, error)
+type (
+	Doer     func(req *Request) error
+	HTTPDoer func(req *Request) (*http.Response, error)
+)
 
 type Client struct {
 	BaseURL string
@@ -22,6 +25,7 @@ type Client struct {
 
 	ContentType   string
 	Authorization string
+	TokenGetter   TokenGetter
 
 	ErrorType reflect.Type
 
@@ -30,6 +34,8 @@ type Client struct {
 	httpClient *http.Client
 	traceMaker TraceMaker
 	logger     *slog.Logger
+	token      atomicToken
+	tokenMutex sync.Mutex
 }
 
 type Overridables struct {
@@ -48,9 +54,7 @@ type Overridables struct {
 	XMLUnmarshal func(req *Request, data []byte, v interface{}) error
 }
 
-var (
-	ErrResponseNotUnmarshaled = errors.New("response was not unmarshaled")
-)
+var ErrResponseNotUnmarshaled = errors.New("response was not unmarshaled")
 
 func New() *Client {
 	return NewWithTimeout(0)
@@ -124,6 +128,18 @@ func (c *Client) SetBasicAuth(username, password string) *Client {
 
 func (c *Client) SetBearerAuth(token string) *Client {
 	return c.SetAuthorization("Bearer " + token)
+}
+
+func (c *Client) SetOAuth(cfg OAuthConfig) *Client {
+	return c.SetTokenGetter(&oauthTokenGetter{
+		config: cfg,
+		client: c,
+	})
+}
+
+func (c *Client) SetTokenGetter(tokenGetter TokenGetter) *Client {
+	c.TokenGetter = tokenGetter
+	return c
 }
 
 func (c *Client) SetAuthorization(auth string) *Client {
