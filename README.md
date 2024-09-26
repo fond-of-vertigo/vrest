@@ -191,6 +191,9 @@ func ExampleNewWithClient() {
 ```
 
 ### Overriding vrest functions
+We're providing a way to override vrest functions. This might be useful for testing or if you want to change the behavior of vrest.
+Through the `Overridable` struct in the client, you can replace the functions you want to override.
+
 ```go
 package main_test
 
@@ -202,20 +205,29 @@ import (
 	"github.com/fond-of-vertigo/vrest"
 )
 
-func ExampleNewWithClient() {
-	client := vrest.New()
-	respBody := make(map[string]interface{})
+type testBody struct {
+	Text   string
+	Number int
+}
+
+func ExampleMockDoer() {
+	client := vrest.NewWithClient(&http.Client{
+		Timeout: 10 * time.Second,
+	})
+
+	client.Overridable.Do = vrest.MockDoer(testBody{Text: "text", Number: 456}, nil)
+
+	respBody := testBody{}
 
 	err := client.NewRequest().
 		SetResponseBody(&respBody).
-		SetHeader("my-header", "my-value").
 		DoGet("https://jsonplaceholder.typicode.com/todos/1")
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		panic(err)
 	}
 
 	fmt.Println("Response:", respBody)
-	// Output: Response: map[completed:false id:1 title:delectus aut autem userId:1]
+	// Output: Response: {text 456}
 }
+
 ```
