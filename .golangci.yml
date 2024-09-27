@@ -33,7 +33,6 @@ linters:
     - sqlclosecheck
     - sloglint
     - spancheck
-    - wsl
     - unconvert
     - wastedassign
 
