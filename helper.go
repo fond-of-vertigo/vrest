@@ -42,7 +42,9 @@ func (c *Client) closeRawResponse(req *Request) {
 	if resp != nil && resp.Body != nil {
 		err := resp.Body.Close()
 		if err != nil {
-			c.logger.LogAttrs(req.Raw.Context(), slog.LevelError, "error when closing response body", slog.String("error", err.Error()))
+			c.logger.LogAttrs(req.Raw.Context(), slog.LevelError,
+				"error when closing response body",
+				slog.String("error", err.Error()))
 		}
 	}
 }

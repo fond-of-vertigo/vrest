@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// nolint: gocognit
 func TestRequest_unmarshalResponseBody(t *testing.T) {
 	ts := newTestServer()
 	defer ts.Close()

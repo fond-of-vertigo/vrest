@@ -3,6 +3,7 @@ package vrest
 import (
 	"fmt"
 	"net/http"
+	"reflect"
 )
 
 // Do sends the request.
@@ -19,8 +20,7 @@ func Do(req *Request) error {
 		defer trace.End()
 	}
 
-	// Saving the actual HTTP request in the raw response.
-	req.Response.Raw, err = req.Overridable.DoHTTPRequest(req)
+	req.Response.Raw, err = req.Overridable.DoHTTPRequest(req) // nolint:bodyclose
 	if req.shouldCloseResponseBody() {
 		defer req.Client.closeRawResponse(req)
 	}
@@ -174,6 +174,11 @@ func (req *Request) Dof(method, pathFormat string, values ...any) error {
 func (req *Request) Do(method, path string) error {
 	req.Method = method
 	req.Path = path
+
+	if err := req.validateBeforeDo(); err != nil {
+		return err
+	}
+
 	return req.Client.Overridable.Do(req)
 }
 
@@ -186,9 +191,26 @@ func (req *Request) shouldCloseResponseBody() bool {
 	if req.Overridable.IsSuccess(req) && req.Response.WantsReadCloser() {
 		// When the caller wants a ReadCloser as result, we don't close
 		// the response body for the caller.
-		// But only for requests that were sucessful, so the caller still
+		// But only for requests that were successful, so the caller still
 		// gets the error unmarshalling for free.
 		return false
 	}
+
 	return true
+}
+
+func (req *Request) validateBeforeDo() error {
+	if err := req.validateResponseBodyKind(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (req *Request) validateResponseBodyKind() error {
+	if req.Response.Body != nil && reflect.ValueOf(req.Response.Body).Kind() != reflect.Ptr {
+		return fmt.Errorf("%w: the value you passed to request.SetResponseBody() must be a pointer", ErrInvalidRequest)
+	}
+
+	return nil
 }

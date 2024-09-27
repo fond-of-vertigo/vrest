@@ -12,6 +12,7 @@ import (
 
 type Request struct {
 	Client        *Client
+	BaseURL       string
 	Context       context.Context
 	Raw           *http.Request
 	Method        string
@@ -24,6 +25,7 @@ type Request struct {
 	Response      Response
 	Overridable   Overridables
 	TraceBody     bool
+	TokenRequest  bool
 }
 
 // NewRequest is a shortcut for NewRequestWithContext(context.Background()).
@@ -51,6 +53,7 @@ func (c *Client) NewRequestWithContext(ctx context.Context) *Request {
 	if c.ContentType != "" {
 		req.SetContentType(c.ContentType)
 	}
+
 	if c.Authorization != "" {
 		req.SetAuthorization(c.Authorization)
 	}
@@ -69,12 +72,14 @@ func (req *Request) makeHTTPRequest() error {
 	if err != nil {
 		return err
 	}
+
 	req.BodyBytes = bodyBytes
 
 	req.Raw, err = http.NewRequestWithContext(req.Context, req.Method, reqURL, reqBodyReader)
 	if err != nil {
 		return err
 	}
+
 	if req.ContentLength > 0 {
 		req.Raw.ContentLength = req.ContentLength
 	}
@@ -84,6 +89,14 @@ func (req *Request) makeHTTPRequest() error {
 		if len(bodyBytes) == 0 && !req.bodyIsReader() {
 			req.Raw.Header.Del("Content-Type")
 		}
+	}
+
+	if req.Client.TokenGetter != nil && !req.TokenRequest {
+		token, err := req.Client.getValidToken(req.Context)
+		if err != nil {
+			return fmt.Errorf("failed to get token for %s %s: %w", req.Method, reqURL, err)
+		}
+		req.SetBearerAuth(token.Token())
 	}
 
 	if len(req.Query) > 0 {
@@ -136,11 +149,14 @@ func (req *Request) marshalRequestBody(body interface{}, contentType string) ([]
 	return nil, fmt.Errorf("don't know how to marshal request body with Content-Type \"%s\"", contentType)
 }
 
-func (req *Request) makeRequestURL(baseURL, requestURL string) string {
-	if baseURL != "" && !strings.Contains(requestURL, baseURL) {
-		return baseURL + requestURL
+func (req *Request) makeRequestURL(baseURL, requestPath string) string {
+	if req.BaseURL != "" {
+		baseURL = req.BaseURL
 	}
-	return requestURL
+	if baseURL != "" && !strings.Contains(requestPath, baseURL) {
+		return baseURL + requestPath
+	}
+	return requestPath
 }
 
 // SetContext sets the context of the request.
@@ -149,8 +165,16 @@ func (req *Request) SetContext(ctx context.Context) *Request {
 	return req
 }
 
+// SetBaseURL overrides the base URL of the client for this request.
+// This is only needed in rare cases, like token requests.
+func (req *Request) SetBaseURL(baseURL string) *Request {
+	req.BaseURL = baseURL
+	return req
+}
+
 // SetBody sets the body of the request.
-func (req *Request) SetBody(body interface{}) *Request {
+// This is only needed in rare cases, like token requests.
+func (req *Request) SetBody(body any) *Request {
 	req.Body = body
 	return req
 }
@@ -203,8 +227,8 @@ func (req *Request) SetContentLength(contentLength int64) *Request {
 // If you pass a pointer to an io.ReadCloser here, you can get
 // the content length by using SetResponseContentLengthPtr(),
 // if the server provides the Content-Length header.
-func (req *Request) SetResponseBody(value interface{}) *Request {
-	req.Response.Body = value
+func (req *Request) SetResponseBody(valuePtr any) *Request {
+	req.Response.Body = valuePtr
 	return req
 }
 
@@ -260,6 +284,13 @@ func (req *Request) SetBasicAuth(username, password string) *Request {
 // The token should not contain the "Bearer " prefix.
 func (req *Request) SetBearerAuth(token string) *Request {
 	return req.SetAuthorization("Bearer " + token)
+}
+
+// SetTokenRequest marks this request as a token request, so the
+// vrest will not try to get a token for this request.
+func (req *Request) SetTokenRequest() *Request {
+	req.TokenRequest = true
+	return req
 }
 
 // SetContentTypeJSON sets the Content-Type header of the request to "application/json".

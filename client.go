@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"reflect"
+	"sync"
 	"time"
 )
 
@@ -24,6 +25,7 @@ type Client struct {
 
 	ContentType   string
 	Authorization string
+	TokenGetter   TokenGetter
 
 	ErrorType reflect.Type
 
@@ -32,6 +34,8 @@ type Client struct {
 	httpClient *http.Client
 	traceMaker TraceMaker
 	logger     *slog.Logger
+	token      atomicToken
+	tokenMutex sync.Mutex
 }
 
 type Overridables struct {
@@ -50,7 +54,10 @@ type Overridables struct {
 	XMLUnmarshal func(req *Request, data []byte, v interface{}) error
 }
 
-var ErrResponseNotUnmarshaled = errors.New("response was not unmarshaled")
+var (
+	ErrResponseNotUnmarshaled = errors.New("response was not unmarshaled")
+	ErrInvalidRequest         = errors.New("invalid request")
+)
 
 // New creates a new client with a default timeout of 0.
 // This means that the client will not have a timeout.
@@ -149,6 +156,22 @@ func (c *Client) SetBasicAuth(username, password string) *Client {
 // SetBearerAuth sets the bearer auth header for the client.
 func (c *Client) SetBearerAuth(token string) *Client {
 	return c.SetAuthorization("Bearer " + token)
+}
+
+// SetOAuth sets the OAuth configuration for the client.
+// This automatically sets the oauth token getter for the client.
+func (c *Client) SetOAuth(cfg OAuthConfig) *Client {
+	return c.SetTokenGetter(&oauthTokenGetter{
+		config: cfg,
+		client: c,
+	})
+}
+
+// SetTokenGetter sets a custom token getter for the client.
+// See the readme and examples for how to implement a custom token getter.
+func (c *Client) SetTokenGetter(tokenGetter TokenGetter) *Client {
+	c.TokenGetter = tokenGetter
+	return c
 }
 
 // SetAuthorization sets the authorization header for the client.
