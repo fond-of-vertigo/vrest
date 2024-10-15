@@ -71,16 +71,18 @@ func (req *Request) processHTTPResponse(rawResp *http.Response, err error) error
 
 	if !success {
 		if didUnmarshal {
+			errMsg := fmt.Sprintf("http request %s %s failed: status %d", req.Raw.Method, req.Raw.URL, req.Response.StatusCode())
 			switch e := responseValue.(type) {
 			case error:
-				return fmt.Errorf("http request %s %s failed: %w", req.Raw.Method, req.Raw.URL, e)
+				return fmt.Errorf("%s: %w", errMsg, e)
 			default:
-				return fmt.Errorf("http request %s %s failed: %s", req.Raw.Method, req.Raw.URL, responseValue)
+				return fmt.Errorf("%s: %s", errMsg, responseValue)
 			}
 		}
 
 		msg := string(req.Response.BodyBytes)
-		return fmt.Errorf("http request %s %s failed: %s", req.Raw.Method, req.Raw.URL, msg)
+		return fmt.Errorf("http request %s %s failed: status %d: %s", req.Raw.Method, req.Raw.URL,
+			req.Response.StatusCode(), msg)
 	}
 
 	return nil
